@@ -165,8 +165,44 @@ These agents execute shell commands and may run `sudo`. Run this on a dedicated 
 
 Raspberry Pi demo flow (operator talk-through):
 
-1. Prepare the Pi (Raspberry Pi OS, network access, git auth, API key ready).
-2. Clone and run setup:
+1. Prepare the Pi (Raspberry Pi OS, network access, API key ready).
+2. Give the device GitHub permissions so it can push commits.
+
+Option A (recommended): SSH deploy key with write access
+
+```bash
+# On the Pi
+ssh-keygen -t ed25519 -C "wdib-$(hostname)" -f ~/.ssh/wdib_github -N ""
+cat ~/.ssh/wdib_github.pub
+```
+
+Then in GitHub: `Repo -> Settings -> Deploy keys -> Add deploy key`, paste the public key, and enable `Allow write access`.
+
+On the Pi, force git to use that key:
+
+```bash
+cat >> ~/.ssh/config <<'EOF'
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/wdib_github
+  IdentitiesOnly yes
+EOF
+
+chmod 600 ~/.ssh/config
+ssh -T git@github.com || true
+```
+
+Option B (fallback): HTTPS + fine-grained PAT
+
+- Create a fine-grained PAT scoped to this repo with `Contents: Read and write`.
+- Use that token when prompted during first push and store it with a credential helper.
+
+```bash
+git config --global credential.helper store
+```
+
+3. Clone and run setup:
 
 ```bash
 git clone git@github.com:<you>/what-do-i-become.git
@@ -175,20 +211,20 @@ chmod +x src/setup.sh
 ./src/setup.sh
 ```
 
-3. Configure runtime:
+4. Configure runtime:
 
 ```bash
 cp src/.env.example src/.env
 nano src/.env
 ```
 
-4. Run one session manually to verify:
+5. Run one session manually to verify:
 
 ```bash
 ./src/run.sh
 ```
 
-5. Confirm a new folder exists at `devices/<uuid>/` and that commits are being created for that UUID.
+6. Confirm a new folder exists at `devices/<uuid>/` and that commits are being created for that UUID.
 
 ### Terminate a device (operator intervention)
 

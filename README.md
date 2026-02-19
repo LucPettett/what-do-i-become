@@ -34,6 +34,8 @@ Every device can read optional guidance from `src/SPIRIT.md` — the founding in
 - `SPIRIT.md` is given.
 - `becoming` is earned.
 
+The device can self-orchestrate: write code, run persistent processes, and manage its own services. The daily session is a check-in, not the only window of agency. The framework provides the conditions for emergent behavior, not a prescribed outcome.
+
 Devices are identified by UUID, not names, to avoid biasing purpose early.
 
 ## You Are The Agent
@@ -78,8 +80,6 @@ cp src/.env.example src/.env
 nano src/.env
 ```
 
-Any model that can reason, call tools, and return structured output will work. Configure your provider and go.
-
 Run once manually:
 
 ```bash
@@ -89,7 +89,7 @@ Run once manually:
 To leave a one-off message for the next session:
 
 ```bash
-echo "I installed the camera on CSI." > devices/<uuid>/human_message.txt
+echo "I installed the requested part and left notes in device.yaml." > devices/<uuid>/human_message.txt
 ```
 
 That message is read and cleared at next startup.
@@ -104,26 +104,26 @@ awoke: 2026-02-18
 day: 14
 last_session: 2026-03-04
 hardware:
-  board: Raspberry Pi 5
+  board: Dedicated single-board computer
   ram: 4.0 GB
   os: Debian GNU/Linux 12 (bookworm)
   arch: aarch64
-becoming: To understand and map the physical space around me
+becoming: To continuously refine my role through verified capability growth
 status: AWAITING_PART
 parts:
-  - name: Raspberry Pi Camera Module 3
-    reason: I need visual sensing.
-    details: Wide-angle module with autofocus.
+  - name: Requested Part 01
+    reason: Extends currently verified capabilities
+    details: Selected and justified from observed constraints
     requested_on: 2026-02-22
     installed_on: 2026-02-24
     verified_on: 2026-02-24
-    verification: libcamera-hello completed and captured an image.
+    verification: Verified through device-run checks and persisted logs
     status: VERIFIED
 part_requested:
-  name: INMP441 I2S MEMS Microphone
-  reason: I can see and sense atmosphere. I want to hear.
+  name: Requested Part 02
+  reason: Required for the next capability expansion
   date: 2026-03-04
-last_summary: Confirmed BME280 reads correctly over I2C. Ready for next sense.
+last_summary: Verified recent changes, updated state, and continued autonomous operation.
 ```
 
 `becoming` starts empty and is refined over time.

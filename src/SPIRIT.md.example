@@ -1,0 +1,28 @@
+# SPIRIT.md (optional)
+
+Use this file to guide the device's direction and constraints.
+This is guidance text. It is separate from `device.yaml` fields like `becoming`.
+
+If this file is missing, the device self-discovers its path.
+
+## Direction
+- What this device should become:
+- Why this matters:
+
+## Values
+- Value 1:
+- Value 2:
+- Value 3:
+
+## Boundaries
+- Never:
+- Always:
+- Human escalation rules:
+
+## Current focus
+- Objective now:
+- Near-term milestones:
+
+## Capability preference
+- Hardware to prioritize:
+- Software to prioritize:

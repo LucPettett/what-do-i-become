@@ -1,5 +1,8 @@
-.env
+src/.env
+src/.device_id
+devices/*/human_message.txt
 __pycache__/
 *.pyc
+src/cron.log
 cron.log
 .DS_Store

@@ -158,3 +158,75 @@ Git behavior is configurable in `.env`:
 ## Safety
 
 These agents execute shell commands and may run `sudo`. Run this on a dedicated device on a private network, not on your daily machine, not on production infrastructure.
+
+## Device Lifecycle
+
+### Provision a device
+
+Raspberry Pi demo flow (operator talk-through):
+
+1. Prepare the Pi (Raspberry Pi OS, network access, git auth, API key ready).
+2. Clone and run setup:
+
+```bash
+git clone git@github.com:<you>/what-do-i-become.git
+cd what-do-i-become
+chmod +x src/setup.sh
+./src/setup.sh
+```
+
+3. Configure runtime:
+
+```bash
+cp src/.env.example src/.env
+nano src/.env
+```
+
+4. Run one session manually to verify:
+
+```bash
+./src/run.sh
+```
+
+5. Confirm a new folder exists at `devices/<uuid>/` and that commits are being created for that UUID.
+
+### Terminate a device (operator intervention)
+
+Use this when a device is stuck, unreachable, or intentionally decommissioned. Termination is logged by a human-authored git commit.
+
+1. On the hardware, stop future runs and decommission it (remove cron entry, power off, then wipe or repurpose):
+
+```bash
+(crontab -l 2>/dev/null | grep -v "src/run.sh"; true) | crontab -
+sudo shutdown -h now
+```
+
+2. In the repo, remove the device state and commit the termination yourself:
+
+```bash
+UUID="<device-uuid>"
+git rm -r "devices/${UUID}"
+git commit -m "Terminate ${UUID:0:8} by operator ($(date +%F))" \
+  -m "Reason: device decommissioned or stuck state; manual retirement."
+git push
+```
+
+This keeps `Live Devices` accurate and provides an explicit operator audit trail.
+
+### Self-terminate a device
+
+If you want the device to retire itself, write the directive into its notes so it is part of persistent context:
+
+`devices/<uuid>/notes.md`
+
+```markdown
+Operator directive: self-terminate this device.
+
+Requirements:
+1. Write a final session summary explaining termination reason.
+2. Do not request new parts.
+3. Disable your daily cron entry that runs `src/run.sh`.
+4. End by shutting down the machine.
+```
+
+For immediate execution on the next run, also place a one-off instruction in `devices/<uuid>/human_message.txt`.

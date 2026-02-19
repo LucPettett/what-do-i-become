@@ -256,8 +256,14 @@ if [ -n "$GIT_USER_EMAIL" ]; then
   git config user.email "$GIT_USER_EMAIL"
 fi
 
-if ! git remote get-url "$GIT_REMOTE" >/dev/null 2>&1; then
-  if [ -n "$GIT_REMOTE_URL" ]; then
+if [ -n "$GIT_REMOTE_URL" ]; then
+  if git remote get-url "$GIT_REMOTE" >/dev/null 2>&1; then
+    CURRENT_REMOTE_URL="$(git remote get-url "$GIT_REMOTE" 2>/dev/null || true)"
+    if [ "$CURRENT_REMOTE_URL" != "$GIT_REMOTE_URL" ]; then
+      git remote set-url "$GIT_REMOTE" "$GIT_REMOTE_URL"
+      echo "  Updated git remote '$GIT_REMOTE' from WDIB_GIT_REMOTE_URL"
+    fi
+  else
     git remote add "$GIT_REMOTE" "$GIT_REMOTE_URL"
     echo "  Added git remote '$GIT_REMOTE' from WDIB_GIT_REMOTE_URL"
   fi
@@ -299,8 +305,8 @@ echo "  Device ID: ${DEVICE_ID}"
 echo "  Short ID:  ${SHORT_ID}"
 echo ""
 echo "  Next steps:"
-echo "    1. Edit src/.env and set provider/model/API key"
-echo "    2. Ensure git auth works (SSH key, gh auth login, or credential helper)"
+echo "    1. Edit src/.env (provider/model/API key, optional WDIB_GIT_REMOTE_URL)"
+echo "    2. Ensure git auth works (SSH key, PAT, or credential helper)"
 echo "    3. Optional: cp src/SPIRIT.md.example src/SPIRIT.md"
 echo "    4. Run manually: ./src/run.sh"
 echo "    5. Device files now live in: devices/${DEVICE_ID}/"

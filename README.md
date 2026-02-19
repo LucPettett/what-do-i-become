@@ -148,7 +148,7 @@ Git behavior is configurable in `.env`:
 - `WDIB_GIT_REMOTE` (default `origin`)
 - `WDIB_GIT_BRANCH` (optional explicit push target)
 - `WDIB_GIT_AUTO_PUSH` (`true`/`false`)
-- `WDIB_GIT_REMOTE_URL` (setup can add remote if missing)
+- `WDIB_GIT_REMOTE_URL` (setup can add or update the remote URL)
 - `WDIB_GIT_USER_NAME`, `WDIB_GIT_USER_EMAIL` (optional local git identity override)
 
 ## Directory Layout
@@ -163,68 +163,94 @@ These agents execute shell commands and may run `sudo`. Run this on a dedicated 
 
 ### Provision a device
 
-Raspberry Pi demo flow (operator talk-through):
+Simple flow:
 
-1. Prepare the Pi (Raspberry Pi OS, network access, API key ready).
-2. Give the device GitHub permissions so it can push commits.
-
-Option A (recommended): SSH deploy key with write access
+1. Clone this repo on your device:
 
 ```bash
-# On the Pi
-ssh-keygen -t ed25519 -C "wdib-$(hostname)" -f ~/.ssh/wdib_github -N ""
-cat ~/.ssh/wdib_github.pub
-```
-
-Then in GitHub: `Repo -> Settings -> Deploy keys -> Add deploy key`, paste the public key, and enable `Allow write access`.
-
-On the Pi, force git to use that key:
-
-```bash
-cat >> ~/.ssh/config <<'EOF'
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/wdib_github
-  IdentitiesOnly yes
-EOF
-
-chmod 600 ~/.ssh/config
-ssh -T git@github.com || true
-```
-
-Option B (fallback): HTTPS + fine-grained PAT
-
-- Create a fine-grained PAT scoped to this repo with `Contents: Read and write`.
-- Use that token when prompted during first push and store it with a credential helper.
-
-```bash
-git config --global credential.helper store
-```
-
-3. Clone and run setup:
-
-```bash
-git clone git@github.com:<you>/what-do-i-become.git
+git clone https://github.com/<you>/what-do-i-become.git
 cd what-do-i-become
-chmod +x src/setup.sh
-./src/setup.sh
 ```
 
-4. Configure runtime:
+2. Configure `src/.env` and point it to your target repo:
 
 ```bash
 cp src/.env.example src/.env
 nano src/.env
 ```
 
-5. Run one session manually to verify:
+Set at minimum:
+
+- `WDIB_GIT_REMOTE=origin`
+- `WDIB_GIT_REMOTE_URL=git@github.com:<you>/what-do-i-become.git`
+- `WDIB_LLM_PROVIDER=openai`
+- `OPENAI_API_KEY=...`
+
+3. Set up your device. We recommend Raspberry Pi. For known working builds, see [Known devices (comments)](https://github.com/OWNER/what-do-i-become/discussions) and replace `OWNER` with your GitHub user/org.
+
+```bash
+chmod +x src/setup.sh
+./src/setup.sh
+```
+
+4. Add GitHub credentials for the agent (this device will commit to your repo):
+
+```bash
+ssh-keygen -t ed25519 -C "wdib-$(hostname)"
+cat ~/.ssh/id_ed25519.pub
+```
+
+Add this key in GitHub with write access to the target repo (deploy key with write access, or a machine/user key with repo write permissions).
+
+If `setup.sh` showed an initial push failure before credentials were added, that is expected.
+
+5. Turn on the device loop:
 
 ```bash
 ./src/run.sh
 ```
 
-6. Confirm a new folder exists at `devices/<uuid>/` and that commits are being created for that UUID.
+`setup.sh` installs daily cron. `run.sh` is the first manual wake-up.
+
+### Provision a device (hardware-first)
+
+If you want to start from bare hardware and use Codex/Claude to walk the setup:
+
+1. Buy hardware:
+- Raspberry Pi 5
+- microSD card (32GB+ recommended)
+- USB-C power supply
+
+2. Put the microSD card in your laptop and open Codex or Claude.
+3. Use this prompt template and fill in the values:
+
+```text
+You have the SD card installed for Raspberry Pi model "{{PI_MODEL}}".
+
+Set up Raspberry Pi OS so that on first boot:
+- Wi-Fi SSID is "{{WIFI_SSID}}"
+- Wi-Fi password is "{{WIFI_PASSWORD}}"
+- project repo is cloned from "{{REPO_URL}}"
+- cron contains: "{{CRON_ENTRY}}"
+- git push is configured for this repo
+
+GitHub key material:
+- public key: "{{GITHUB_PUBLIC_KEY}}"
+
+Important constraints:
+- Never use or print private keys.
+- Use only the public key for GitHub deploy-key/user-key setup.
+- Show exact shell commands in order.
+- Include verification commands for wifi, git remote, cron, and first run.
+```
+
+4. Run the generated commands on the device, then verify:
+- `git remote -v`
+- `crontab -l`
+- `./src/run.sh`
+- new files appear in `devices/<uuid>/`
+
+5. Confirm the device can push commits to your target repo.
 
 ### Terminate a device (operator intervention)
 

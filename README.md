@@ -10,11 +10,13 @@
 
 An autonomous hardware & software framework that extends itself, one hardware part at a time.
 
-`what do i become` is a framework that turns a single device into an autonomous agentic system. An LLM agent inspects what hardware is has availabile, designs and writes code to execute, and **askes you to install new hardware**. You are the agent. You install the hardware.
+`what do i become` is a framework that turns a single device into an autonomous agentic system. An LLM agent inspects what hardware it has availabile, designs and writes code to execute, and **askes you to install new hardware**.
 
-With no configuration: what-do-i-become could become anything.
+**You are the agent. You install the hardware.**
 
-With a spirt file, what-do-i-become becomes whatever you want it to become.
+With no configuration: `what-do-i-become` could become anything.
+
+With a Spirit file, `what-do-i-become` becomes whatever you want it to become.
 
 As it evolves, WDOB will eventually create and construct it's own software, becoming more and more autonomous, serving a single purpose.
 

@@ -1,5 +1,6 @@
 <p align="center">
   <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./logo-dark.png">
     <source media="(prefers-color-scheme: light)" srcset="./logo.png">
     <img src="./logo.png" alt="what-do-i-become logo" width="560">
   </picture>
@@ -9,9 +10,17 @@
 
 An autonomous hardware & software framework that extends itself, one hardware part at a time.
 
-`what do i become` is a framework that turns a **single-board computer** into an autonomous project. An LLM agent runs daily on a dedicated device, **inspects what hardware exists**, **writes code to use it**, and **requests specific parts** when it needs more. You handle the physical layer — opening boxes, connecting cables. The machine handles everything else.
+`what do i become` is a framework that turns a single device into an autonomous agentic system. An LLM agent inspects what hardware exists, designs and writes code to execute, and **requests specific hardware from human agents** (yes, you). You handle the physical layer — opening boxes, connecting cables. The machine handles will guide you.
 
-**Wake. Think. Act. Log. Sleep.** That's the whole loop.
+**Wake. Think. Act. Log. Sleep.**
+
+With no configuration: what-do-i-become could become anything. 
+
+With a spirt file, what-do-i-become becomes whatever you want it to become.
+
+As it evolves, WDOB will eventually create and construct it's own software, becoming more and more autonomous, serving a single purpose.
+
+Share the journey.
 
 [How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](#safety)
 

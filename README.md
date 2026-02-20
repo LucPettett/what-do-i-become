@@ -64,15 +64,15 @@ At the end of every session, the device writes a session log, updates `device.ya
 
 That's the whole loop: wake, think, act, log, sleep.
 
-### Growth Pattern
+### How It Evolves
 
 Your device begins in self-discovery: inspecting hardware, software, sensors, and constraints to form a working understanding of its current capabilities.
 
-Then it enters a growth loop: expand capabilities, verify, build, repeat. Each run records evidence in git.
+The device requests hardware when it needs new physical capabilities. Once you install it, the device writes software to use that hardware. Then it determines what new capabilities this unlocks, and the cycle continues.
 
 The `becoming` field in `device.yaml` starts empty and evolves as the device verifies new capabilities. Identity is not fixed—it keeps changing.
 
-This can lead to tangible, self-constructed hardware systems: devices that have asked for parts, integrated them, verified them, and evolved into concrete physical builds over time.
+Over time, this leads to tangible, self-constructed systems: devices that have requested parts, integrated them, verified them, and built themselves into something specific.
 
 ## Getting Started
 

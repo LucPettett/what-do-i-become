@@ -59,15 +59,17 @@ All of your devices will commit to fork of this repo, under  `devices/<uuid>/`, 
 
 ## How It Works
 
-### Awakening
+### ☀️ Awakening
 
-Before the daily loop begins, the device goes through an awakening stage.
+On first launch, before the daily loop exists, the device goes through an awakening stage.
 
-It generates a unique device ID, creates `devices/<uuid>/`, discovers available hardware, writes an initial `device.yaml` (`awoke` set to today, `becoming` empty), and establishes its first memory state.
+It self-discovers by deep-diving what it can observe: hardware buses and peripherals, OS/runtime capabilities, network interfaces/routes/connectivity, and local system state. It writes and executes its own code and commands to probe, verify, and map those capabilities.
 
-This is the first claim of identity. From that point on, every run updates the same device record and extends a continuous history of what the machine is becoming.
+It then generates a unique device ID, creates `devices/<uuid>/`, writes initial state (`awoke` set to today, `becoming` empty), and establishes its first memory record. This is the first claim of identity.
 
-### Daily Cycle
+Because awakening includes autonomous code execution, treat it as a high-risk phase and review the Safety warnings in [`SAFETY.md`](./SAFETY.md) before deployment.
+
+### ☕️ Daily Cycle
 
 The device wakes once per day on a cron schedule. It loads its context — **spirit, state, any message you left** — and enters an agent loop where it can inspect hardware, run commands, write files, and reason about what to do next.
 
@@ -75,7 +77,7 @@ If it needs a physical part it doesn't have, it **requests exactly one**, then w
 
 At the end of every session, the device writes a **session log**, updates `device.yaml`, and pushes to the repo. Then it sleeps until tomorrow.
 
-### How It Evolves
+### 🧪 How It Evolves
 
 **Example evolution** — a real expirement:
 

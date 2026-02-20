@@ -59,6 +59,14 @@ All of your devices will commit to fork of this repo, under  `devices/<uuid>/`, 
 
 ## How It Works
 
+### Awakening
+
+Before the daily loop begins, the device goes through an awakening stage.
+
+It generates a unique device ID, creates `devices/<uuid>/`, discovers available hardware, writes an initial `device.yaml` (`awoke` set to today, `becoming` empty), and establishes its first memory state.
+
+This is the first claim of identity. From that point on, every run updates the same device record and extends a continuous history of what the machine is becoming.
+
 ### Daily Cycle
 
 The device wakes once per day on a cron schedule. It loads its context — **spirit, state, any message you left** — and enters an agent loop where it can inspect hardware, run commands, write files, and reason about what to do next.
@@ -142,4 +150,12 @@ It covers:
 
 ## Safety
 
-Safety and termination guidance lives in [`SAFETY.md`](./SAFETY.md).
+This project allows an agent to execute arbitrary shell commands with `sudo` access.
+
+Treat it as high-risk software. Run only on a dedicated device, on a private network, and never on production or personal daily-use machines.
+
+Even if scheduled once per day, evolved agents may run persistent software continuously between wakes. A kill instruction may not be processed in time during an active incident.
+
+If control is lost or behavior becomes unsafe, physically disconnect power and/or network immediately. Do not wait for the next cron run.
+
+Full termination and cleanup procedures: [`SAFETY.md`](./SAFETY.md).

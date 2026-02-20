@@ -161,18 +161,18 @@ These agents execute shell commands and may run `sudo`. Run this on a dedicated 
 
 ## Device Lifecycle
 
-### Provision a device
+### Prepare your repo
 
-Simple flow:
+Do this once for your fork before provisioning devices:
 
-1. Clone this repo on your device:
+1. Clone your target repo:
 
 ```bash
 git clone https://github.com/<you>/what-do-i-become.git
 cd what-do-i-become
 ```
 
-2. Configure `src/.env` and point it to your target repo:
+2. Configure `src/.env`:
 
 ```bash
 cp src/.env.example src/.env
@@ -186,71 +186,106 @@ Set at minimum:
 - `WDIB_LLM_PROVIDER=openai`
 - `OPENAI_API_KEY=...`
 
-3. Set up your device. We recommend Raspberry Pi. For known working builds, see [Known devices (comments)](https://github.com/OWNER/what-do-i-become/discussions) and replace `OWNER` with your GitHub user/org.
+For the GitHub credential model, prefer a **repo deploy key** (below) so each device has access to only one repository and can be revoked instantly.
+
+### Provision a device (new hardware or existing OS)
+
+Use this flow for both:
+
+- Blank SD card / new hardware: flash Raspberry Pi OS first, then continue at step 1.
+- Existing device with OS already installed: start at step 1.
+
+1. Ensure system dependencies are installed (including Python):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-pip git i2c-tools
+python3 --version
+git --version
+```
+
+2. Clone the repo onto the device:
+
+```bash
+git clone https://github.com/<you>/what-do-i-become.git
+cd what-do-i-become
+```
+
+3. Add GitHub credentials for this device (recommended: repo deploy key with write access).
+
+Important: you do **not** copy a secret from GitHub to the device in this flow. You generate a keypair on the device, then add only the public key to GitHub.
+
+```bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+ssh-keygen -t ed25519 -f ~/.ssh/wdib_repo -C "wdib-$(hostname)-$(date +%F)" -N ""
+cat ~/.ssh/wdib_repo.pub
+```
+
+In GitHub (target repo):
+
+1. Go to `Settings` -> `Deploy keys` -> `Add deploy key`.
+2. Title: `wdib-<hostname>` (or similar).
+3. Key: paste `~/.ssh/wdib_repo.pub`.
+4. Enable `Allow write access`.
+
+Pin this repo to that key on the device:
+
+```bash
+cat >> ~/.ssh/config <<'EOF'
+Host github-wdib
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/wdib_repo
+  IdentitiesOnly yes
+EOF
+
+git remote set-url origin git@github-wdib:<you>/what-do-i-become.git
+```
+
+If you set `WDIB_GIT_REMOTE_URL` in `src/.env`, set it to the same host alias so `setup.sh` keeps the same remote URL:
+
+```dotenv
+WDIB_GIT_REMOTE_URL=git@github-wdib:<you>/what-do-i-become.git
+```
+
+Sanity-check auth before setup:
+
+```bash
+ssh -T git@github-wdib
+git push --dry-run origin HEAD
+```
+
+To revoke this device later, delete the deploy key in the repo's `Settings` -> `Deploy keys`. The device immediately loses push access to this repo.
+
+Note: deploy keys are repo-scoped (good), but not path-scoped within a repo.
+
+4. Run setup:
 
 ```bash
 chmod +x src/setup.sh
 ./src/setup.sh
 ```
 
-4. Add GitHub credentials for the agent (this device will commit to your repo):
+5. Ensure cron has a daily run entry.
+`setup.sh` usually adds this automatically, but if you need to add it manually, use:
 
 ```bash
-ssh-keygen -t ed25519 -C "wdib-$(hostname)"
-cat ~/.ssh/id_ed25519.pub
+(crontab -l 2>/dev/null; echo "0 9 * * * cd /path/to/what-do-i-become/src && ./run.sh >> /path/to/what-do-i-become/cron.log 2>&1") | crontab -
 ```
 
-Add this key in GitHub with write access to the target repo (deploy key with write access, or a machine/user key with repo write permissions).
-
-If `setup.sh` showed an initial push failure before credentials were added, that is expected.
-
-5. Turn on the device loop:
+6. Run the first wake-up manually and verify:
 
 ```bash
 ./src/run.sh
+git remote -v
+crontab -l
 ```
 
-`setup.sh` installs daily cron. `run.sh` is the first manual wake-up.
+Verify that:
 
-### Provision a device (hardware-first)
-
-If you want to start from bare hardware and use Codex/Claude to walk the setup:
-
-1. Buy hardware:
-- Raspberry Pi 5
-- microSD card (32GB+ recommended)
-- USB-C power supply
-
-2. Put the microSD card in your laptop and open Codex or Claude.
-3. Use this prompt template and fill in the values:
-
-```text
-You have the SD card installed for Raspberry Pi model "{{PI_MODEL}}".
-
-Set up Raspberry Pi OS so that on first boot:
-- Wi-Fi SSID is "{{WIFI_SSID}}"
-- Wi-Fi password is "{{WIFI_PASSWORD}}"
-- project repo is cloned from "{{REPO_URL}}"
-- cron contains: "{{CRON_ENTRY}}"
-- git push is configured for this repo
-
-GitHub key material:
-- public key: "{{GITHUB_PUBLIC_KEY}}"
-
-Important constraints:
-- Never use or print private keys.
-- Use only the public key for GitHub deploy-key/user-key setup.
-- Show exact shell commands in order.
-- Include verification commands for wifi, git remote, cron, and first run.
-```
-
-4. Run the generated commands on the device, then verify:
-- `git remote -v`
-- `crontab -l`
-- `./src/run.sh`
 - new files appear in `devices/<uuid>/`
-
-5. Confirm the device can push commits to your target repo.
+- the device can push commits to your target repo
 
 ### Terminate a device (operator intervention)
 

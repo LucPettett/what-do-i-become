@@ -7,7 +7,11 @@
 
 # what-do-i-become
 
-A self-construction framework for hardware that wakes up, explores itself, and asks you to build it into something. An LLM agent runs daily on dedicated devices, inspecting what hardware exists, writing code to use it, and requesting specific parts when needed.
+An autonomous hardware & software framework that extends itself, one hardware part at a time.
+
+`what do i become` is a framework that turns a **single-board computer** into an autonomous project. An LLM agent runs daily on a dedicated device, **inspects what hardware exists**, **writes code to use it**, and **requests specific parts** when it needs more. You handle the physical layer — opening boxes, connecting cables. The machine handles everything else.
+
+**Wake. Think. Act. Log. Sleep.** That's the whole loop.
 
 [How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](#safety)
 
@@ -25,24 +29,20 @@ Devices running right now. Auto-generated from `devices/*/device.yaml`.
 
 ## What Is This?
 
-`what-do-i-become` turns any computer into an autonomous hardware project. An LLM agent wakes once per day on a device, inspects what it has, explores what it can do, writes code, and requests a specific physical part when needed.
+Every device can read optional guidance from **`src/SPIRIT.md`** — the founding instructions for behavior and direction. That file is human-authored. What changes over time is **`becoming`** in `device.yaml`, which the device writes itself.
 
-You buy it. You install it. The machine verifies it works and moves on.
+- **`SPIRIT.md` is given.**
+- **`becoming` is earned.**
 
-Every device can read optional guidance from `src/SPIRIT.md` — the founding instructions for behavior and direction. That file is human-authored guidance. What changes over time is `becoming` in `device.yaml`, which the device writes itself.
+The device can **self-orchestrate**: write code, run persistent processes, and manage its own services. The daily session is a check-in, not the only window of agency. The framework provides the **conditions for emergent behavior**, not a prescribed outcome.
 
-- `SPIRIT.md` is given.
-- `becoming` is earned.
-
-The device can self-orchestrate: write code, run persistent processes, and manage its own services. The daily session is a check-in, not the only window of agency. The framework provides the conditions for emergent behavior, not a prescribed outcome.
-
-Devices are identified by UUID, not names, to avoid biasing purpose early.
+Devices are identified by **UUID**, not names, to avoid biasing purpose early.
 
 ## You Are The Agent
 
-The machine can reason, inspect, and write code, but it cannot open a box or connect a cable. You handle the physical layer.
+The machine can reason, inspect, and write code — but it **cannot open a box or connect a cable**. You handle the physical layer.
 
-Example: the device determines it needs a temperature sensor, logs a part request, and waits. You order it, install it, and leave a note in `human_message.txt`. Next morning, the device tests the sensor and continues.
+The device determines it needs a temperature sensor, logs a part request, and waits. You order it, install it, and leave a note in `human_message.txt`. Next morning, the device tests the sensor and continues.
 
 ## GitHub Is Your Base
 
@@ -56,31 +56,31 @@ Devices push only to `devices/<uuid>/`, and a GitHub Action rebuilds the README 
 
 ### Daily Cycle
 
-The device wakes once per day on a cron schedule. It loads its context — spirit, state, any message you left — and enters an agent loop where it can inspect hardware, run commands, write files, and reason about what to do next.
+The device wakes once per day on a cron schedule. It loads its context — **spirit, state, any message you left** — and enters an agent loop where it can inspect hardware, run commands, write files, and reason about what to do next.
 
-If it needs a physical part it doesn't have, it requests exactly one, then waits for you to install it. On the next run, it verifies the part works before moving on.
+If it needs a physical part it doesn't have, it **requests exactly one**, then waits for you to install it. On the next run, it verifies the part works before moving on.
 
-At the end of every session, the device writes a session log, updates `device.yaml`, and pushes to the repo. Then it sleeps until tomorrow.
-
-That's the whole loop: wake, think, act, log, sleep.
+At the end of every session, the device writes a **session log**, updates `device.yaml`, and pushes to the repo. Then it sleeps until tomorrow.
 
 ### How It Evolves
 
-**Evolving hardware**
+The `becoming` field in `device.yaml` starts empty. Identity is not fixed — it changes as hardware and software capabilities compound.
 
-The device identifies a capability gap and requests specific hardware to fill it. `Add a camera module` — because visual input enables object detection, environmental monitoring, or verification of physical state. `Add a temperature sensor` — because thermal data can trigger actions, validate operating conditions, or inform decision-making about when to activate other components.
+**Evolving hardware** — the device identifies a capability gap and requests specific hardware to fill it:
 
-You install the part. The device verifies it works.
+- **Day 3:** `Request camera module` — the device wants visual input.
+- **Day 4:** You install it. The device verifies it works.
+- **Day 9:** `Request temperature sensor` — thermal data can trigger actions or validate operating conditions.
+- **Day 10:** You install it. Verified.
 
-**Evolving software**
+**Evolving software** — once hardware exists, the device writes software to use it:
 
-Once hardware exists, the device writes software to use it. `Install camera firmware and configure v4l2 drivers` — because the camera module needs kernel-level support before image capture is possible. `Write a Python script using OpenCV to capture and process frames` — because raw images need analysis. `Run inference using a pre-trained model to detect motion` — because the device determined it needs to know when something moves in frame.
+- **Day 4:** `Install camera firmware, configure v4l2 drivers` — kernel-level support before capture is possible.
+- **Day 5:** `Write a Python script using OpenCV to capture and process frames` — raw images need analysis.
+- **Day 6:** `Run inference with a pre-trained model to detect motion` — the device decided it needs to know when something moves.
+- **Day 11:** `Write a service that logs temperature anomalies and triggers the camera` — capabilities start compounding.
 
-Each software layer builds on verified hardware. Each new capability unlocks further possibilities.
-
-The `becoming` field in `device.yaml` starts empty and evolves as the device verifies what it can do. Identity is not fixed—it keeps changing as hardware and software capabilities compound.
-
-Over time, this leads to tangible, self-constructed systems: devices that have requested parts, integrated them, written software to use them, and built themselves into something specific.
+Each software layer builds on verified hardware. Each new capability unlocks further possibilities. Over time, this leads to **tangible, self-constructed systems**: devices that have requested parts, integrated them, written software to use them, and built themselves into something specific.
 
 ## Getting Started
 
@@ -119,13 +119,13 @@ That message is read and cleared at next startup.
 ## Architecture
 
 **Three layers:**
-- `src/`: runtime framework (agent loop, tools, memory, setup scripts, spirit prompt)
-- `devices/<uuid>/`: per-device state and history written by the device itself
-- `.github/`: automation that rebuilds the Live Devices dashboard after pushes
+- **`src/`** — runtime framework (agent loop, tools, memory, setup scripts, spirit prompt)
+- **`devices/<uuid>/`** — per-device state and history, written by the device itself
+- **`.github/`** — automation that rebuilds the Live Devices dashboard after pushes
 
 **State management:**
 
-The repo is the control plane. State, identity evolution (`becoming`), and operational history all live in version control. Every session commits its changes, making the entire system auditable through git history.
+The repo is the **single source of truth**. State, identity evolution (`becoming`), and operational history all live in version control. Every session commits its changes, making the entire system **auditable through git history**.
 
 ## Setup
 
@@ -141,4 +141,8 @@ It covers:
 
 ## Safety
 
-These agents execute arbitrary shell commands with `sudo` access. Run this on a dedicated device on a private network, not on your daily machine, not on production infrastructure.
+These agents execute **arbitrary shell commands with `sudo` access**. Run this on a **dedicated device on a private network** — not on your daily machine, not on production infrastructure. The device has unrestricted internet access by default.
+
+The agent may still exhibit unintended behavior. Reviewing **git diffs** after each session push is your most practical oversight mechanism.
+
+[`SETUP.md`](./SETUP.md) documents self-termination and manual termination procedures, but these controls **may not be effective** and should not be treated as guaranteed.

@@ -7,9 +7,9 @@
 
 # what-do-i-become
 
-A self-construction framework for hardware that wakes up, explores itself, and asks you to build it into something.
+A self-construction framework for hardware that wakes up, explores itself, and asks you to build it into something. An LLM agent runs daily on dedicated devices, inspecting what hardware exists, writing code to use it, and requesting specific parts when needed.
 
-[How It Works](#how-it-works) · [Lifecycle](#lifecycle) · [Examples](#examples) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](#safety)
+[How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](#safety)
 
 ---
 
@@ -20,7 +20,7 @@ Devices running right now. Auto-generated from `devices/*/device.yaml`.
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Becoming | Status |
 | --- | --- | ---: | --- | --- |
-| - | - | 0 | - | - |
+<!-- No devices yet. Add your first device using the setup guide. -->
 <!-- DEVICE_DASHBOARD_END -->
 
 ## What Is This?
@@ -42,6 +42,8 @@ Devices are identified by UUID, not names, to avoid biasing purpose early.
 
 The machine can reason, inspect, and write code, but it cannot open a box or connect a cable. You handle the physical layer.
 
+Example: the device determines it needs a temperature sensor, logs a part request, and waits. You order it, install it, and leave a note in `human_message.txt`. Next morning, the device tests the sensor and continues.
+
 ## GitHub Is Your Base
 
 The repo is the product. Fork `what-do-i-become`, point devices at it, and the repo becomes your database, monitoring layer, and oversight tool.
@@ -52,6 +54,8 @@ Devices push only to `devices/<uuid>/`, and a GitHub Action rebuilds the README 
 
 ## How It Works
 
+### Daily Cycle
+
 The device wakes once per day on a cron schedule. It loads its context — spirit, state, any message you left — and enters an agent loop where it can inspect hardware, run commands, write files, and reason about what to do next.
 
 If it needs a physical part it doesn't have, it requests exactly one, then waits for you to install it. On the next run, it verifies the part works before moving on.
@@ -60,29 +64,19 @@ At the end of every session, the device writes a session log, updates `device.ya
 
 That's the whole loop: wake, think, act, log, sleep.
 
-## Lifecycle
+### Growth Pattern
 
-### How it begins
+Your device begins in self-discovery: inspecting hardware, software, sensors, and constraints to form a working understanding of its current capabilities.
 
-Your device awakes and enters a period of self-discovery. It inspects hardware, software, sensors, and constraints, then forms a working understanding of what it can currently do.
+Then it enters a growth loop: expand capabilities, verify, build, repeat. Each run records evidence in git.
 
-### Growth loop
+The `becoming` field in `device.yaml` starts empty and evolves as the device verifies new capabilities. Identity is not fixed—it keeps changing.
 
-Grow, check my abilities, build, grow, check my abilities, build.
-
-The loop is capability-first: each run expands or verifies what the machine can do, then records evidence in git.
-
-### Where it ends
-
-It can end in tangible, self-constructed hardware systems: devices that have asked for parts, integrated them, verified them, and evolved into a concrete physical build over time.
-
-## Examples
-
-[image placeholder]
+This can lead to tangible, self-constructed hardware systems: devices that have asked for parts, integrated them, verified them, and evolved into concrete physical builds over time.
 
 ## Getting Started
 
-This framework is designed to run on a dedicated single-board computer on a private network. We recommend a Raspberry Pi. See [Live Devices](#live-devices) for reference builds.
+This framework is designed to run on a dedicated single-board computer on a private network. We recommend a Raspberry Pi. See Live Devices above for running examples.
 
 ```bash
 git clone https://github.com/<you>/what-do-i-become.git
@@ -91,7 +85,7 @@ chmod +x src/setup.sh
 ./src/setup.sh
 ```
 
-Setup generates a UUID, creates `devices/<uuid>/`, discovers hardware, writes the initial `device.yaml` with `awoke` set to today and `becoming` empty, configures daily cron at 09:00, and creates the first commit.
+Setup generates a unique device ID, creates `devices/<uuid>/`, discovers hardware, writes the initial `device.yaml` with `awoke` set to today and `becoming` empty, configures daily cron at 09:00, and creates the first commit.
 
 Set your API key:
 
@@ -116,19 +110,14 @@ That message is read and cleared at next startup.
 
 ## Architecture
 
-The system has three layers:
+**Three layers:**
+- `src/`: runtime framework (agent loop, tools, memory, setup scripts, spirit prompt)
+- `devices/<uuid>/`: per-device state and history written by the device itself
+- `.github/`: automation that rebuilds the Live Devices dashboard after pushes
 
-- `src/`: runtime framework (agent loop, tools, memory, setup scripts, spirit prompt).
-- `devices/<uuid>/`: per-device state and history written by the device itself.
-- `.github/`: automation that rebuilds the `Live Devices` dashboard after pushes.
+**State management:**
 
-Operationally, each device moves through three recurring stages:
-
-1. Self-discovery stage: on first boot and every wake, the agent inspects hardware/software capabilities and updates its working state.
-2. Identity stage: the `becoming` field in `devices/<uuid>/device.yaml` starts empty and is refined over time as the device verifies new capabilities. Identity is not fixed and can keep changing.
-3. Logging stage: every session writes durable records (state updates, summaries, session logs), commits them to git, and pushes to your repo for auditability.
-
-This is why the repo is the control plane: state, identity evolution, and operational history all live in version control.
+The repo is the control plane. State, identity evolution (`becoming`), and operational history all live in version control. Every session commits its changes, making the entire system auditable through git history.
 
 ## Setup
 
@@ -144,4 +133,4 @@ It covers:
 
 ## Safety
 
-These agents execute shell commands and may run `sudo`. Run this on a dedicated device on a private network, not on your daily machine, not on production infrastructure.
+These agents execute arbitrary shell commands with `sudo` access. Run this on a dedicated device on a private network, not on your daily machine, not on production infrastructure.

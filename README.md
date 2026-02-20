@@ -10,17 +10,13 @@
 
 An autonomous hardware & software framework that extends itself, one hardware part at a time.
 
-`what do i become` is a framework that turns a single device into an autonomous agentic system. An LLM agent inspects what hardware exists, designs and writes code to execute, and **requests specific hardware from human agents** (yes, you). You handle the physical layer — opening boxes, connecting cables. The machine handles will guide you.
+`what do i become` is a framework that turns a single device into an autonomous agentic system. An LLM agent inspects what hardware is has availabile, designs and writes code to execute, and **askes you to install new hardware**. You are the agent. You install the hardware.
 
-**Wake. Think. Act. Log. Sleep.**
-
-With no configuration: what-do-i-become could become anything. 
+With no configuration: what-do-i-become could become anything.
 
 With a spirt file, what-do-i-become becomes whatever you want it to become.
 
 As it evolves, WDOB will eventually create and construct it's own software, becoming more and more autonomous, serving a single purpose.
-
-Share the journey.
 
 [How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](#safety)
 
@@ -36,30 +32,26 @@ Devices running right now. Auto-generated from `devices/*/device.yaml`.
 <!-- No devices yet. Add your first device using the setup guide. -->
 <!-- DEVICE_DASHBOARD_END -->
 
-## What Is This?
+## Hardware with a spirit
 
-Every device can read optional guidance from **`src/SPIRIT.md`** — the founding instructions for behavior and direction. That file is human-authored. What changes over time is **`becoming`** in `device.yaml`, which the device writes itself.
+Every device has a **`SPIRIT.md`** — the founding instructions for behavior and direction. This file is human-authored, but is also not required (empty spirits are fine). Regardless, spirit or no spirit, the device will evolve into something.
 
-- **`SPIRIT.md` is given.**
-- **`becoming` is earned.**
+- **A `SPIRIT.md` may be given.**
+- **A `becoming` is discovered.**
 
-The device can **self-orchestrate**: write code, run persistent processes, and manage its own services. The daily session is a check-in, not the only window of agency. The framework provides the **conditions for emergent behavior**, not a prescribed outcome.
-
-Devices are identified by **UUID**, not names, to avoid biasing purpose early.
+Every device will **self-orchestrate**: write code, run persistent processes, and manage its own services. In the beginning, the daily session is the primary window of agency but as time goes on, the device will become more and more autonomous. This framework provides **a foundry for emergent behavior**.
 
 ## You Are The Agent
 
-The machine can reason, inspect, and write code — but it **cannot open a box or connect a cable**. You handle the physical layer.
+It's difficult for a machine. It's stranded, it cannot move, it cannot manipulate, it cannot sense. It can only inspect, and write code — but it can be helped. You **can open a box, you can connect a cable, you can install a sensor**. You handle the physical layer.
 
 The device determines it needs a temperature sensor, logs a part request, and waits. You order it, install it, and leave a note in `human_message.txt`. Next morning, the device tests the sensor and continues.
 
 ## GitHub Is Your Base
 
-The repo is the product. Fork `what-do-i-become`, point devices at it, and the repo becomes your database, monitoring layer, and oversight tool.
+The repo is the product. Fork `what-do-i-become`, point devices at it, and the repo becomes your monitoring layer and observability.
 
-Every session is committed. Every part request is logged. Every decision is in version control.
-
-Devices push only to `devices/<uuid>/`, and a GitHub Action rebuilds the README dashboard from `devices/*/device.yaml`.
+All of your devices will commit to fork of this repo, under  `devices/<uuid>/`, and a GitHub Action rebuilds the README dashboard from `devices/*/device.yaml`.
 
 ## How It Works
 
@@ -73,27 +65,21 @@ At the end of every session, the device writes a **session log**, updates `devic
 
 ### How It Evolves
 
-The `becoming` field in `device.yaml` starts empty. Identity is not fixed — it changes as hardware and software capabilities compound.
+**Example evolution** — a real expirement:
 
-**Evolving hardware** — the device identifies a capability gap and requests specific hardware to fill it:
-
-- **Day 3:** `Request camera module` — the device wants visual input.
-- **Day 4:** You install it. The device verifies it works.
-- **Day 9:** `Request temperature sensor` — thermal data can trigger actions or validate operating conditions.
-- **Day 10:** You install it. Verified.
-
-**Evolving software** — once hardware exists, the device writes software to use it:
-
-- **Day 4:** `Install camera firmware, configure v4l2 drivers` — kernel-level support before capture is possible.
-- **Day 5:** `Write a Python script using OpenCV to capture and process frames` — raw images need analysis.
-- **Day 6:** `Run inference with a pre-trained model to detect motion` — the device decided it needs to know when something moves.
-- **Day 11:** `Write a service that logs temperature anomalies and triggers the camera` — capabilities start compounding.
+- **Day 0:** `Inception` - The device immediately self discovers its capabilities and considers it's spirit and purpose.
+- **Day 1:** `Request camera module` — the device decides it wants visual input.
+- **Day 2:** `Awaiting camera module` — the device waits for you to install it.
+- **Day 4:** You install it. The device verifies it works and installs the necessary drivers. The device constructs software to use the camera.
+- **Day 5:** The device runs the camera software and logs the results, observing a garden view.
+- **Day 6:** The device considers the data and decides it needs to understand it's weather. 
+- **Day 7:** `Request temperature sensor` — the device decides it needs to measure temperature.
 
 Each software layer builds on verified hardware. Each new capability unlocks further possibilities. Over time, this leads to **tangible, self-constructed systems**: devices that have requested parts, integrated them, written software to use them, and built themselves into something specific.
 
 ## Getting Started
 
-This framework is designed to run on a dedicated single-board computer on a private network. We recommend a Raspberry Pi. See Live Devices above for running examples.
+This framework is designed to run on a dedicated single-board computer on a private network. See Live Devices above for running examples.
 
 ```bash
 git clone https://github.com/<you>/what-do-i-become.git

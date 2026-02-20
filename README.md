@@ -67,15 +67,15 @@ It self-discovers by deep-diving what it can observe: hardware buses and periphe
 
 It then generates a unique device ID, creates `devices/<uuid>/`, writes initial state (`awoke` set to today, `becoming` empty), and establishes its first memory record. This is the first claim of identity.
 
-Because awakening includes autonomous code execution, treat it as a high-risk phase and review the Safety warnings in [`SAFETY.md`](./SAFETY.md) before deployment.
+Because awakening includes autonomous code execution, treat it as a high-risk phase and review the Safety warnings in [`SAFETY.md`](./SAFETY.md) before deployment, due to network access.
 
 ### ☕️ Daily Cycle
 
-The device wakes once per day on a cron schedule. It loads its context — **spirit, state, any message you left** — and enters an agent loop where it can inspect hardware, run commands, write files, and reason about what to do next.
+The device will begin it's daily cycle. Once per day it will awaken. It loads its context — **it's spirit & memories** — and enters an agent loop where it can continue to inspect it's own hardware, run commands, write code, files, and consider what to do next.
 
-If it needs a physical part it doesn't have, it **requests exactly one**, then waits for you to install it. On the next run, it verifies the part works before moving on.
+If it needs a physical component - a camera, a sensor, a memory upgrade, it requests one, then **waits for you, the human, to install it.
 
-At the end of every session, the device writes a **session log**, updates `device.yaml`, and pushes to the repo. Then it sleeps until tomorrow.
+Naturally, on the next awakening, it verifies the part works before moving on to implement it's next idea.
 
 ### 🧪 How It Evolves
 

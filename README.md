@@ -20,7 +20,7 @@ With a Spirit file, `what-do-i-become` becomes whatever you want it to become.
 
 As it evolves, WDOB will eventually create and construct it's own software, becoming more and more autonomous, serving a single purpose.
 
-[How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](#safety)
+[How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](./SAFETY.md)
 
 ---
 
@@ -41,7 +41,9 @@ Every device has a **`SPIRIT.md`** — the founding instructions for behavior an
 - **A `SPIRIT.md` may be given.**
 - **A `becoming` is discovered.**
 
-Every device will **self-orchestrate**: write code, run persistent processes, and manage its own services. In the beginning, the daily session is the primary window of agency but as time goes on, the device will become more and more autonomous. This framework provides **a foundry for emergent behavior**.
+Every device will **self-orchestrate**: write code, run persistent processes, and manage its own services. In the beginning, the daily session is the primary window of agency but as time goes on, the device will become more and more autonomous.
+
+This framework provides **a foundry for emergent behavior**.
 
 ## You Are The Agent
 
@@ -78,6 +80,8 @@ At the end of every session, the device writes a **session log**, updates `devic
 - **Day 7:** `Request temperature sensor` — the device decides it needs to measure temperature.
 
 Each software layer builds on verified hardware. Each new capability unlocks further possibilities. Over time, this leads to **tangible, self-constructed systems**: devices that have requested parts, integrated them, written software to use them, and built themselves into something specific.
+
+As time goes on the agent becomes more and more autonomous, identifing and pursuing it's own goals, **pursuing a purpose**.
 
 ## Getting Started
 
@@ -134,12 +138,8 @@ It covers:
 - `Add a device (fresh device / microSD first boot)` workflow.
 - `Add a device (existing device / already running OS)` workflow.
 - repo-scoped deploy key setup and revocation.
-- verification checks and device termination procedures.
+- verification checks for setup and first wake-up.
 
 ## Safety
 
-These agents execute **arbitrary shell commands with `sudo` access**. Run this on a **dedicated device on a private network** — not on your daily machine, not on production infrastructure. The device has unrestricted internet access by default.
-
-The agent may still exhibit unintended behavior. Reviewing **git diffs** after each session push is your most practical oversight mechanism.
-
-[`SETUP.md`](./SETUP.md) documents self-termination and manual termination procedures, but these controls **may not be effective** and should not be treated as guaranteed.
+Safety and termination guidance lives in [`SAFETY.md`](./SAFETY.md).

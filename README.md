@@ -66,13 +66,21 @@ That's the whole loop: wake, think, act, log, sleep.
 
 ### How It Evolves
 
-Your device begins in self-discovery: inspecting hardware, software, sensors, and constraints to form a working understanding of its current capabilities.
+**Evolving hardware**
 
-The device requests hardware when it needs new physical capabilities. Once you install it, the device writes software to use that hardware. Then it determines what new capabilities this unlocks, and the cycle continues.
+The device identifies a capability gap and requests specific hardware to fill it. `Add a camera module` — because visual input enables object detection, environmental monitoring, or verification of physical state. `Add a temperature sensor` — because thermal data can trigger actions, validate operating conditions, or inform decision-making about when to activate other components.
 
-The `becoming` field in `device.yaml` starts empty and evolves as the device verifies new capabilities. Identity is not fixed—it keeps changing.
+You install the part. The device verifies it works.
 
-Over time, this leads to tangible, self-constructed systems: devices that have requested parts, integrated them, verified them, and built themselves into something specific.
+**Evolving software**
+
+Once hardware exists, the device writes software to use it. `Install camera firmware and configure v4l2 drivers` — because the camera module needs kernel-level support before image capture is possible. `Write a Python script using OpenCV to capture and process frames` — because raw images need analysis. `Run inference using a pre-trained model to detect motion` — because the device determined it needs to know when something moves in frame.
+
+Each software layer builds on verified hardware. Each new capability unlocks further possibilities.
+
+The `becoming` field in `device.yaml` starts empty and evolves as the device verifies what it can do. Identity is not fixed—it keeps changing as hardware and software capabilities compound.
+
+Over time, this leads to tangible, self-constructed systems: devices that have requested parts, integrated them, written software to use them, and built themselves into something specific.
 
 ## Getting Started
 

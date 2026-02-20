@@ -140,6 +140,7 @@ crontab -l
 Verify:
 
 - new files appear in `devices/<uuid>/`
+- `devices/<uuid>/wdib.log` is created and appends each run (including API/LLM errors)
 - push succeeds to your target repo
 
 Revocation: delete this deploy key in repo settings to immediately block access.

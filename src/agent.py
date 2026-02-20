@@ -53,8 +53,6 @@ MAX_ITERATIONS = int(os.environ.get("WDIB_MAX_ITERATIONS", os.environ.get("PI_AG
 COMMAND_TIMEOUT = int(os.environ.get("WDIB_CMD_TIMEOUT", os.environ.get("PI_AGENT_CMD_TIMEOUT", "300")))
 MAX_OUTPUT_CHARS = 4000
 
-llm = create_llm_backend()
-
 
 def one_line(text: str, max_chars: int = 200) -> str:
     compact = " ".join(text.split())
@@ -66,6 +64,30 @@ def env_truthy(name: str, default: bool = False) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def get_log_path(device_id: str | None = None) -> Path:
+    if device_id:
+        return PROJECT_ROOT / "devices" / device_id / "wdib.log"
+    return PROJECT_ROOT / "wdib.log"
+
+
+def emit(log_path: Path | None, message: str, level: str = "INFO") -> None:
+    text = str(message)
+    print(text)
+
+    if not log_path:
+        return
+
+    timestamp = datetime.now().isoformat(timespec="seconds")
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("a", encoding="utf-8") as handle:
+            lines = text.splitlines() or [""]
+            for line in lines:
+                handle.write(f"{timestamp} [{level}] {line}\n")
+    except Exception as exc:
+        print(f"{timestamp} [WARN] Failed to write local log '{log_path}': {exc}")
 
 
 # Tool handlers
@@ -378,13 +400,20 @@ Only one part request may be open at a time.
 
 def run_session():
     start_time = time.time()
+    fallback_log_path = get_log_path(None)
 
-    device_id = resolve_device_id()
+    try:
+        device_id = resolve_device_id()
+    except Exception as exc:
+        emit(fallback_log_path, f"Failed to resolve device id: {exc}", level="ERROR")
+        raise
+
     device_short = short_device_id(device_id)
+    log_path = get_log_path(device_id)
 
-    print(f"\n{'=' * 60}")
-    print(f"  WHAT-DO-I-BECOME [{device_short}] - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"{'=' * 60}")
+    emit(log_path, f"\n{'=' * 60}")
+    emit(log_path, f"  WHAT-DO-I-BECOME [{device_short}] - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    emit(log_path, f"{'=' * 60}")
 
     state = load_state()
 
@@ -401,11 +430,23 @@ def run_session():
 
     inventory = collect_inventory_snapshot()
 
-    print(f"\n  Device: {device_id}")
-    print(f"  Day: {session_number}")
-    print(f"  Status: {starting_status}")
-    print(f"  Open part request: {'yes' if state.get('part_requested') else 'no'}")
-    print(f"  LLM: {llm.provider}/{llm.model}")
+    llm = None
+    llm_init_error = None
+    try:
+        llm = create_llm_backend()
+    except Exception as exc:
+        llm_init_error = exc
+        state["status"] = "ERROR"
+        emit(log_path, f"  LLM init failed: {exc}", level="ERROR")
+
+    emit(log_path, f"\n  Device: {device_id}")
+    emit(log_path, f"  Day: {session_number}")
+    emit(log_path, f"  Status: {starting_status}")
+    emit(log_path, f"  Open part request: {'yes' if state.get('part_requested') else 'no'}")
+    if llm:
+        emit(log_path, f"  LLM: {llm.provider}/{llm.model}")
+    else:
+        emit(log_path, "  LLM: unavailable (see error above)", level="ERROR")
 
     instructions = build_instructions(
         state,
@@ -420,7 +461,8 @@ def run_session():
         f"Good morning. Day {session_number} ({date.today().isoformat()}). "
         f"Status: {starting_status}. Begin your session."
     )
-    input_list = llm.create_context(wake_msg)
+
+    input_list = llm.create_context(wake_msg) if llm else []
     conversation = [{"role": "user", "content": wake_msg}]
 
     human_msg_file = Path(get_human_message_path())
@@ -428,84 +470,91 @@ def run_session():
         human_msg = human_msg_file.read_text(encoding="utf-8").strip()
         if human_msg:
             note = f"[MESSAGE FROM HUMAN]: {human_msg}"
-            llm.add_user_message(input_list, note)
+            if llm:
+                llm.add_user_message(input_list, note)
             conversation.append({"role": "user", "content": note})
-            print(f"\n  Human message: {human_msg[:120]}")
+            emit(log_path, f"\n  Human message: {human_msg[:120]}")
         human_msg_file.unlink(missing_ok=True)
 
     iteration = 0
     had_api_error = False
 
-    while iteration < MAX_ITERATIONS:
-        iteration += 1
-        print(f"\n-- iteration {iteration}/{MAX_ITERATIONS} --")
-
-        try:
-            turn = llm.run_turn(
-                context=input_list,
-                instructions=instructions,
-                tools=TOOL_DEFINITIONS,
-            )
-        except Exception as exc:
-            print(f"  API error: {exc}")
-            conversation.append({"role": "system", "content": f"API error: {exc}"})
-            state["status"] = "ERROR"
-            had_api_error = True
-            break
-
-        has_calls = False
-
-        for event in turn.events:
-            if event.type == "function_call":
-                has_calls = True
-                name = event.name
-                args = event.arguments or {}
-
-                preview = json.dumps(args, ensure_ascii=True)
-                if len(preview) > 120:
-                    preview = preview[:120] + "..."
-                print(f"  TOOL {name}({preview})")
-
-                result, changed = dispatch_tool(name, args, state)
-                if changed:
-                    save_state(state)
-
-                result_json = json.dumps(result, ensure_ascii=True)
-                print(f"  RESULT {result_json[:200]}{'...' if len(result_json) > 200 else ''}")
-
-                conversation.append(
-                    {"role": "assistant", "type": "tool_call", "tool": name, "arguments": args}
-                )
-                conversation.append(
-                    {"role": "tool", "type": "tool_result", "tool": name, "output": result}
-                )
-
-                llm.add_tool_result(input_list, event.call_id, result_json)
-            else:
-                text = event.text
-                display = text[:300].replace("\n", " ")
-                print(f"  TEXT {display}{'...' if len(text) > 300 else ''}")
-                conversation.append({"role": "assistant", "content": text})
-
-        if not has_calls:
-            recent_assistant = [
-                msg
-                for msg in conversation[-5:]
-                if msg.get("role") == "assistant" and msg.get("content")
-            ]
-            if not recent_assistant:
-                fallback = turn.output_text
-                if fallback:
-                    print(f"  TEXT {fallback[:300]}")
-                    conversation.append({"role": "assistant", "content": fallback})
-            print("\n  Session complete")
-            break
-    else:
-        print(f"\n  Reached iteration limit ({MAX_ITERATIONS})")
+    if not llm:
+        had_api_error = True
         conversation.append(
-            {"role": "system", "content": f"Session ended: hit {MAX_ITERATIONS} iteration limit"}
+            {"role": "system", "content": f"LLM initialization error: {llm_init_error}"}
         )
-        state["status"] = "ERROR"
+    else:
+        while iteration < MAX_ITERATIONS:
+            iteration += 1
+            emit(log_path, f"\n-- iteration {iteration}/{MAX_ITERATIONS} --")
+
+            try:
+                turn = llm.run_turn(
+                    context=input_list,
+                    instructions=instructions,
+                    tools=TOOL_DEFINITIONS,
+                )
+            except Exception as exc:
+                emit(log_path, f"  API error: {exc}", level="ERROR")
+                conversation.append({"role": "system", "content": f"API error: {exc}"})
+                state["status"] = "ERROR"
+                had_api_error = True
+                break
+
+            has_calls = False
+
+            for event in turn.events:
+                if event.type == "function_call":
+                    has_calls = True
+                    name = event.name
+                    args = event.arguments or {}
+
+                    preview = json.dumps(args, ensure_ascii=True)
+                    if len(preview) > 120:
+                        preview = preview[:120] + "..."
+                    emit(log_path, f"  TOOL {name}({preview})")
+
+                    result, changed = dispatch_tool(name, args, state)
+                    if changed:
+                        save_state(state)
+
+                    result_json = json.dumps(result, ensure_ascii=True)
+                    emit(log_path, f"  RESULT {result_json}")
+
+                    conversation.append(
+                        {"role": "assistant", "type": "tool_call", "tool": name, "arguments": args}
+                    )
+                    conversation.append(
+                        {"role": "tool", "type": "tool_result", "tool": name, "output": result}
+                    )
+
+                    llm.add_tool_result(input_list, event.call_id, result_json)
+                else:
+                    text = event.text
+                    display = text[:300].replace("\n", " ")
+                    emit(log_path, f"  TEXT {display}{'...' if len(text) > 300 else ''}")
+                    conversation.append({"role": "assistant", "content": text})
+
+            if not has_calls:
+                recent_assistant = [
+                    msg
+                    for msg in conversation[-5:]
+                    if msg.get("role") == "assistant" and msg.get("content")
+                ]
+                if not recent_assistant:
+                    fallback = turn.output_text
+                    if fallback:
+                        emit(log_path, f"  TEXT {fallback[:300]}")
+                        conversation.append({"role": "assistant", "content": fallback})
+                emit(log_path, "\n  Session complete")
+                break
+        else:
+            emit(log_path, f"\n  Reached iteration limit ({MAX_ITERATIONS})", level="ERROR")
+            conversation.append(
+                {"role": "system", "content": f"Session ended: hit {MAX_ITERATIONS} iteration limit"}
+            )
+            state["status"] = "ERROR"
 
     elapsed = round(time.time() - start_time)
 
@@ -525,44 +574,52 @@ def run_session():
         "duration_seconds": elapsed,
         "conversation": conversation,
         "summary": None,
+        "wdib_log_path": str(log_path.relative_to(PROJECT_ROOT)),
     }
 
-    print("\n  Generating summary...")
-    try:
-        summary = generate_summary(llm.generate_text, session_data)
-        session_data["summary"] = summary
-        print(f"  {one_line(summary, 200)}")
-    except Exception as exc:
-        print(f"  Summary failed: {exc}")
-        session_data["summary"] = f"(generation failed: {exc})"
+    emit(log_path, "\n  Generating summary...")
+    if not llm:
+        session_data["summary"] = f"(generation skipped: LLM unavailable: {llm_init_error})"
+        emit(log_path, f"  {session_data['summary']}", level="ERROR")
+    else:
+        try:
+            summary = generate_summary(llm.generate_text, session_data)
+            session_data["summary"] = summary
+            emit(log_path, f"  {one_line(summary, 200)}")
+        except Exception as exc:
+            emit(log_path, f"  Summary failed: {exc}", level="ERROR")
+            session_data["summary"] = f"(generation failed: {exc})"
 
     state["day"] = session_number
     state["last_session"] = session_data["date"]
-    if state.get("status") == "FIRST_RUN":
-        state["status"] = "EXPLORING"
-    if state.get("status") == "VERIFYING_PART" and not state.get("part_requested"):
-        state["status"] = "EXPLORING"
-    if state.get("part_requested") and state.get("status") not in {"AWAITING_PART", "VERIFYING_PART"}:
-        state["status"] = "AWAITING_PART"
+    if had_api_error:
+        state["status"] = "ERROR"
+    else:
+        if state.get("status") == "FIRST_RUN":
+            state["status"] = "EXPLORING"
+        if state.get("status") == "VERIFYING_PART" and not state.get("part_requested"):
+            state["status"] = "EXPLORING"
+        if state.get("part_requested") and state.get("status") not in {"AWAITING_PART", "VERIFYING_PART"}:
+            state["status"] = "AWAITING_PART"
 
     state["last_summary"] = one_line(str(session_data.get("summary") or ""), max_chars=220)
     save_state(state)
 
     filepath = save_session(session_data)
-    print(f"\n  Saved: {filepath}")
+    emit(log_path, f"\n  Saved: {filepath}")
 
-    git_commit(session_data, device_id)
+    git_commit(session_data, device_id, log_path=log_path)
 
-    print(f"\n{'=' * 60}")
-    print(f"  Day {session_number} complete - {elapsed}s, {iteration} iteration(s)")
+    emit(log_path, f"\n{'=' * 60}")
+    emit(log_path, f"  Day {session_number} complete - {elapsed}s, {iteration} iteration(s)")
     if had_api_error:
-        print("  Session ended with API error (status=ERROR)")
-    print(f"{'=' * 60}\n")
+        emit(log_path, "  Session ended with API error (status=ERROR)", level="ERROR")
+    emit(log_path, f"{'=' * 60}\n")
 
 
 # Git helpers
 
-def git_commit(session_data, device_id: str):
+def git_commit(session_data, device_id: str, log_path: Path | None = None):
     device_rel = f"devices/{device_id}"
     try:
         os.chdir(PROJECT_ROOT)
@@ -586,7 +643,7 @@ def git_commit(session_data, device_id: str):
             check=True,
         ).stdout.strip()
         if not cached:
-            print("  [git] Nothing to commit for this device")
+            emit(log_path, "  [git] Nothing to commit for this device")
             return
 
         day = session_data["session_number"]
@@ -598,7 +655,7 @@ def git_commit(session_data, device_id: str):
         subprocess.run(["git", "commit", "-m", message, "--", device_rel], check=True)
 
         if not git_auto_push:
-            print("  [git] WDIB_GIT_AUTO_PUSH=false; commit created locally only")
+            emit(log_path, "  [git] WDIB_GIT_AUTO_PUSH=false; commit created locally only")
             return
 
         remote_check = subprocess.run(
@@ -607,9 +664,10 @@ def git_commit(session_data, device_id: str):
             text=True,
         )
         if remote_check.returncode != 0:
-            print(
-                f"  [git] Remote '{git_remote}' is not configured; "
-                "commit kept locally"
+            emit(
+                log_path,
+                f"  [git] Remote '{git_remote}' is not configured; commit kept locally",
+                level="ERROR",
             )
             return
 
@@ -619,11 +677,11 @@ def git_commit(session_data, device_id: str):
 
         push = subprocess.run(push_cmd, capture_output=True, text=True, timeout=30)
         if push.returncode == 0:
-            print(f"  [git] Pushed to {git_remote}: {message}")
+            emit(log_path, f"  [git] Pushed to {git_remote}: {message}")
         else:
-            print(f"  [git] Push failed (will retry later): {push.stderr[:120]}")
+            emit(log_path, f"  [git] Push failed (will retry later): {push.stderr[:120]}", level="ERROR")
     except Exception as exc:
-        print(f"  [git] Error: {exc}")
+        emit(log_path, f"  [git] Error: {exc}", level="ERROR")
 
 
 if __name__ == "__main__":

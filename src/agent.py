@@ -32,6 +32,7 @@ def load_dotenv() -> None:
 load_dotenv()
 
 from llm import create_llm_backend  # noqa: E402
+from skills import load_skill_snapshot, render_skill_prompt_block  # noqa: E402
 from tools import TOOL_DEFINITIONS  # noqa: E402
 from memory import (  # noqa: E402
     ALLOWED_STATUSES,
@@ -289,7 +290,7 @@ def dispatch_tool(name, args, state):
 
 # Prompt builder
 
-def build_instructions(state, notes, summaries, session_number, spirit, inventory):
+def build_instructions(state, notes, summaries, session_number, spirit, inventory, skills_prompt_block):
     today = date.today().isoformat()
 
     becoming = state.get("becoming", "").strip() or "(unset)"
@@ -389,6 +390,7 @@ Only one part request may be open at a time.
 {pending_block}
 {inventory_block}
 {spirit_block}
+{skills_prompt_block}
 
 == NOTES ==
 {notes_text}
@@ -429,6 +431,8 @@ def run_session():
     starting_status = state.get("status", "EXPLORING")
 
     inventory = collect_inventory_snapshot()
+    skills_snapshot = load_skill_snapshot()
+    skills_prompt_block = render_skill_prompt_block(skills_snapshot)
 
     llm = None
     llm_init_error = None
@@ -443,6 +447,16 @@ def run_session():
     emit(log_path, f"  Day: {session_number}")
     emit(log_path, f"  Status: {starting_status}")
     emit(log_path, f"  Open part request: {'yes' if state.get('part_requested') else 'no'}")
+    available_skills = skills_snapshot.get("available") or []
+    if available_skills:
+        skill_names = ", ".join(str(item.get("name", "")) for item in available_skills if item.get("name"))
+        emit(log_path, f"  Skills loaded: {len(available_skills)} ({skill_names})")
+    else:
+        emit(log_path, "  Skills loaded: 0")
+    skipped_skills = skills_snapshot.get("skipped") or []
+    if skipped_skills:
+        example = skipped_skills[0]
+        emit(log_path, f"  Skills skipped: {len(skipped_skills)} (example: {example.get('name')} - {example.get('reason')})")
     if llm:
         emit(log_path, f"  LLM: {llm.provider}/{llm.model}")
     else:
@@ -455,6 +469,7 @@ def run_session():
         session_number,
         spirit,
         inventory,
+        skills_prompt_block,
     )
 
     wake_msg = (

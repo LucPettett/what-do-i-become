@@ -143,6 +143,12 @@ Verify:
 - `devices/<uuid>/wdib.log` is created and appends each run (including API/LLM errors)
 - push succeeds to your target repo
 
+## Skills
+
+Bundled skills live in `src/skills/`.
+
+Add your own skills in `skills/<name>/SKILL.md`. User skills are loaded with higher precedence than bundled skills, so matching names override bundled behavior. No skill feature flags are required.
+
 Revocation: delete this deploy key in repo settings to immediately block access.
 
 ## Safety and termination

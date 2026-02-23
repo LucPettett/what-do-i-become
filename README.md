@@ -45,6 +45,21 @@ Every device will **self-orchestrate**: write code, run persistent processes, an
 
 This framework provides **a foundry for emergent behavior**.
 
+## Spirit + Skills
+
+`SPIRIT.md` defines purpose and constraints.
+
+Skills define reusable execution playbooks.
+
+- **Bundled skills:** `src/skills/<skill-name>/SKILL.md`
+- **User skills:** `skills/<skill-name>/SKILL.md`
+
+At runtime, user skills override bundled skills when they share the same skill name.
+
+Current bundled examples:
+- `openai-inference` for text/image/web inference.
+- `coding-ops` for code writing, OS navigation, and bash execution.
+
 ## You Are The Agent
 
 It's difficult for a machine. It's stranded, it cannot move, it cannot manipulate, it cannot sense. It can only inspect, and write code — but it can be helped. You **can open a box, you can connect a cable, you can install a sensor**. You handle the physical layer.
@@ -129,8 +144,10 @@ That message is read and cleared at next startup.
 
 ## Architecture
 
-**Three layers:**
+**Core layers:**
 - **`src/`** — runtime framework (agent loop, tools, memory, setup scripts, spirit prompt)
+- **`src/skills/`** — bundled skills shipped with WDIB
+- **`skills/`** — optional user-authored skills that override bundled skills by name
 - **`devices/<uuid>/`** — per-device state and history, written by the device itself
 - **`.github/`** — automation that rebuilds the Live Devices dashboard after pushes
 

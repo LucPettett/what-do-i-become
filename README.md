@@ -8,9 +8,9 @@
 
 # what-do-i-become
 
-An autonomous hardware & software framework that extends itself, one hardware part at a time.
+An autonomous hardware and software framework that extends itself, one hardware part at a time.
 
-`what do i become` is a framework that turns a single device into an autonomous agentic system. An LLM agent inspects what hardware it has availabile, designs and writes code to execute, and **askes you to install new hardware**.
+`what do i become` turns a single device into an autonomous system. WDIB runs a control plane that keeps state and purpose, then delegates software execution to a Codex worker on the device. When new hardware is needed, it requests installation and waits for machine-observed detection and verification.
 
 **You are the agent. You install the hardware.**
 
@@ -18,7 +18,7 @@ With no configuration: `what-do-i-become` could become anything.
 
 With a Spirit file, `what-do-i-become` becomes whatever you want it to become.
 
-As it evolves, WDOB will eventually create and construct it's own software, becoming more and more autonomous, serving a single purpose.
+As it evolves, WDIB will keep constructing its own software, becoming more autonomous while pursuing a single purpose.
 
 [How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](./SAFETY.md)
 
@@ -45,46 +45,28 @@ Every device will **self-orchestrate**: write code, run persistent processes, an
 
 This framework provides **a foundry for emergent behavior**.
 
-## Spirit + Skills
+## Spirit
 
-`SPIRIT.md` defines purpose and constraints.
+`SPIRIT.md` is the intent file for a device. It defines mission, priorities, tradeoffs, and non-negotiable boundaries.
 
-Skills define reusable execution playbooks.
+- Write Spirit in outcome language.
+- Keep Spirit stable across implementation changes.
+- If execution details change, update Skills instead of overloading Spirit.
 
-### Spirit vs Skills Contract
+## Skills
 
-`SPIRIT.md` is the intent layer. Skills are the capability layer.
-
-- Spirit decides `what` and `why`:
-  - mission / becoming direction
-  - priorities and tradeoffs
-  - non-negotiable boundaries and escalation rules
-- Skills decide `how`:
-  - repeatable execution steps
-  - commands, scripts, and tool usage
-  - input/output formats and verification flow
-
-### Conflict Rules
-
-- If a Skill conflicts with Spirit direction or boundaries, Spirit wins.
-- Skills must not redefine purpose, ethics, or safety policy.
-- Spirit should not hardcode fragile implementation details when a Skill can provide them.
-- When no Skill exists, the agent may improvise implementation, but must still satisfy Spirit constraints.
-
-### Authoring Guidance
-
-- Write Spirit in outcome language, not command language.
-- Write Skills as reusable workflows that can serve multiple Spirit goals.
-- Prefer linking a Spirit objective to one or more Skills via tasks/incidents/artifacts, not by embedding long procedures in Spirit text.
+Skills are reusable execution playbooks for recurring work.
 
 - **Bundled skills:** `src/skills/<skill-name>/SKILL.md`
 - **User skills:** `skills/<skill-name>/SKILL.md`
 
-At runtime, user skills override bundled skills when they share the same skill name.
+At runtime, user skills override bundled skills when names match.
 
 Current bundled examples:
 - `openai-inference` for text/image/web inference.
 - `coding-ops` for code writing, OS navigation, and bash execution.
+
+When a Skill conflicts with Spirit boundaries, Spirit wins.
 
 ## You Are The Agent
 
@@ -112,13 +94,21 @@ Because awakening includes autonomous code execution, treat it as a high-risk ph
 
 ### ☕️ Daily Cycle
 
-The device will begin it's daily cycle. Once per day it will awaken. It loads its context — **it's spirit & memories** — and enters an agent loop where it can continue to inspect it's own hardware, run commands, write code, files, and consider what to do next.
+Once per day, WDIB runs a tick:
 
-Across wakes, work continuity is tracked in an explicit task queue stored in `state.json` (`tasks[]`) with statuses:
-`TODO`, `IN_PROGRESS`, `DONE`, `BLOCKED`.
-Unresolved runtime failures are tracked separately in an incident queue (`incidents[]`) with statuses:
-`OPEN`, `IN_PROGRESS`, `BLOCKED`, `RESOLVED`, plus retry metadata (`retry_count`, `next_retry_on`).
-Inference decisions are logged as artifacts with input image refs, model output, confidence, and action taken.
+1. Load `state.json` and `SPIRIT.md`.
+2. Probe hardware requests and auto-advance status on machine evidence.
+3. Build a `work_order`.
+4. Run Codex worker on-device.
+5. Validate `worker_result`, reduce state, and write events/artifacts.
+6. Commit and push `devices/<uuid>/` changes.
+
+State continuity is tracked in:
+
+- `tasks[]` with statuses: `TODO`, `IN_PROGRESS`, `DONE`, `BLOCKED`
+- `hardware_requests[]` with statuses: `OPEN`, `DETECTED`, `VERIFIED`, `FAILED`
+- `incidents[]` with statuses: `OPEN`, `RESOLVED`
+- `artifacts[]` for auditable evidence
 
 If it needs a physical component - a camera, a sensor, a memory upgrade, it requests one, then **waits for you, the human, to install it.
 
@@ -172,6 +162,7 @@ Hardware installation does not require software acknowledgment. WDIB auto-detect
 
 **Core layers:**
 - **`src/wdib/`** — WDIB control plane (`tick` orchestration, contracts, reducers, hardware probe, git adapter)
+- **`codex` CLI** — worker plane that executes each `work_order` and writes `worker_result`
 - **`src/skills/`** — bundled skills used by Codex worker tasks
 - **`skills/`** — optional user-authored skills that override bundled skills by name
 - **`devices/<uuid>/`** — canonical state and audit trail (`state.json`, `events.ndjson`, sessions, work orders, worker results)

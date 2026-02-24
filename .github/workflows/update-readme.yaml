@@ -3,7 +3,7 @@ name: Update README Dashboard
 on:
   push:
     paths:
-      - "devices/*/device.yaml"
+      - "devices/*/state.json"
       - ".github/build_readme.py"
   workflow_dispatch:
 
@@ -23,7 +23,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pyyaml
+        run: python -m pip install --upgrade pip
 
       - name: Build dashboard
         run: python .github/build_readme.py

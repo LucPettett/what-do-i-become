@@ -26,7 +26,7 @@ As it evolves, WDOB will eventually create and construct it's own software, beco
 
 ## Live Devices
 
-Devices running right now. Auto-generated from `devices/*/device.yaml`.
+Devices running right now. Auto-generated from `devices/*/state.json`.
 
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Becoming | Status |
@@ -51,6 +51,32 @@ This framework provides **a foundry for emergent behavior**.
 
 Skills define reusable execution playbooks.
 
+### Spirit vs Skills Contract
+
+`SPIRIT.md` is the intent layer. Skills are the capability layer.
+
+- Spirit decides `what` and `why`:
+  - mission / becoming direction
+  - priorities and tradeoffs
+  - non-negotiable boundaries and escalation rules
+- Skills decide `how`:
+  - repeatable execution steps
+  - commands, scripts, and tool usage
+  - input/output formats and verification flow
+
+### Conflict Rules
+
+- If a Skill conflicts with Spirit direction or boundaries, Spirit wins.
+- Skills must not redefine purpose, ethics, or safety policy.
+- Spirit should not hardcode fragile implementation details when a Skill can provide them.
+- When no Skill exists, the agent may improvise implementation, but must still satisfy Spirit constraints.
+
+### Authoring Guidance
+
+- Write Spirit in outcome language, not command language.
+- Write Skills as reusable workflows that can serve multiple Spirit goals.
+- Prefer linking a Spirit objective to one or more Skills via tasks/incidents/artifacts, not by embedding long procedures in Spirit text.
+
 - **Bundled skills:** `src/skills/<skill-name>/SKILL.md`
 - **User skills:** `skills/<skill-name>/SKILL.md`
 
@@ -64,13 +90,13 @@ Current bundled examples:
 
 It's difficult for a machine. It's stranded, it cannot move, it cannot manipulate, it cannot sense. It can only inspect, and write code — but it can be helped. You **can open a box, you can connect a cable, you can install a sensor**. You handle the physical layer.
 
-The device determines it needs a temperature sensor, logs a part request, and waits. You order it, install it, and leave a note in `human_message.txt`. Next morning, the device tests the sensor and continues.
+The device determines it needs a temperature sensor, logs a part request, and waits. You order it and install it. On the next wake, WDIB auto-detects and verifies the hardware before continuing.
 
 ## GitHub Is Your Base
 
 The repo is the product. Fork `what-do-i-become`, point devices at it, and the repo becomes your monitoring layer and observability.
 
-All of your devices will commit to fork of this repo, under  `devices/<uuid>/`, and a GitHub Action rebuilds the README dashboard from `devices/*/device.yaml`.
+All of your devices will commit to fork of this repo, under  `devices/<uuid>/`, and a GitHub Action rebuilds the README dashboard from `devices/*/state.json`.
 
 ## How It Works
 
@@ -87,6 +113,12 @@ Because awakening includes autonomous code execution, treat it as a high-risk ph
 ### ☕️ Daily Cycle
 
 The device will begin it's daily cycle. Once per day it will awaken. It loads its context — **it's spirit & memories** — and enters an agent loop where it can continue to inspect it's own hardware, run commands, write code, files, and consider what to do next.
+
+Across wakes, work continuity is tracked in an explicit task queue stored in `state.json` (`tasks[]`) with statuses:
+`TODO`, `IN_PROGRESS`, `DONE`, `BLOCKED`.
+Unresolved runtime failures are tracked separately in an incident queue (`incidents[]`) with statuses:
+`OPEN`, `IN_PROGRESS`, `BLOCKED`, `RESOLVED`, plus retry metadata (`retry_count`, `next_retry_on`).
+Inference decisions are logged as artifacts with input image refs, model output, confidence, and action taken.
 
 If it needs a physical component - a camera, a sensor, a memory upgrade, it requests one, then **waits for you, the human, to install it.
 
@@ -119,7 +151,7 @@ chmod +x src/setup.sh
 ./src/setup.sh
 ```
 
-Setup generates a unique device ID, creates `devices/<uuid>/`, discovers hardware, writes the initial `device.yaml` with `awoke` set to today and `becoming` empty, configures daily cron at 09:00, and creates the first commit.
+Setup generates a unique device ID, creates `devices/<uuid>/`, writes the canonical `state.json`, configures daily cron at 09:00, and creates the first commit.
 
 Set your API key:
 
@@ -134,21 +166,15 @@ Run once manually:
 ./src/run.sh
 ```
 
-To leave a one-off message for the next session:
-
-```bash
-echo "I installed the requested part and left notes in device.yaml." > devices/<uuid>/human_message.txt
-```
-
-That message is read and cleared at next startup.
+Hardware installation does not require software acknowledgment. WDIB auto-detects installation status from machine-observed detection/verification rules in each hardware request.
 
 ## Architecture
 
 **Core layers:**
-- **`src/`** — runtime framework (agent loop, tools, memory, setup scripts, spirit prompt)
-- **`src/skills/`** — bundled skills shipped with WDIB
+- **`src/wdib/`** — WDIB control plane (`tick` orchestration, contracts, reducers, hardware probe, git adapter)
+- **`src/skills/`** — bundled skills used by Codex worker tasks
 - **`skills/`** — optional user-authored skills that override bundled skills by name
-- **`devices/<uuid>/`** — per-device state and history, written by the device itself
+- **`devices/<uuid>/`** — canonical state and audit trail (`state.json`, `events.ndjson`, sessions, work orders, worker results)
 - **`.github/`** — automation that rebuilds the Live Devices dashboard after pushes
 
 **State management:**

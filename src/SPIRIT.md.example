@@ -1,9 +1,15 @@
 # SPIRIT.md (optional)
 
 Use this file to guide the device's direction and constraints.
-This is guidance text. It is separate from `device.yaml` fields like `becoming`.
+This is guidance text. It is separate from `state.json` fields like `purpose.becoming`.
 
 If this file is missing, the device self-discovers its path.
+
+## Spirit vs Skills contract
+- Spirit sets outcomes and boundaries (`what` and `why`).
+- Skills provide execution workflows (`how`).
+- If a skill conflicts with Spirit boundaries, Spirit wins.
+- Keep Spirit high-level and stable; keep implementation detail in Skills.
 
 ## Direction
 - What this device should become:

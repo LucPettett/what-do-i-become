@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wdib://schemas/worker_result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "cycle_id", "status", "summary"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "cycle_id": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "enum": ["COMPLETED", "BLOCKED", "FAILED"]},
+    "summary": {"type": "string", "minLength": 1},
+    "becoming": {"type": "string"},
+    "proposed_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title"],
+        "properties": {
+          "title": {"type": "string", "minLength": 1},
+          "description": {"type": "string"},
+          "status": {"type": "string", "enum": ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]},
+          "blocked_by": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "task_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "status"],
+        "properties": {
+          "task_id": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "proposed_hardware_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "reason", "detection"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1},
+          "verify_command": {"type": "string"},
+          "notes": {"type": "string"},
+          "detection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "value"],
+            "properties": {
+              "kind": {"type": "string", "enum": ["path_exists", "glob_exists", "command_success", "lsusb_contains"]},
+              "value": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "incidents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "summary", "severity", "status"],
+        "properties": {
+          "title": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "severity": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
+          "status": {"type": "string", "enum": ["OPEN", "RESOLVED"]}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "description"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

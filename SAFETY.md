@@ -10,7 +10,7 @@ There is risk of damage to the device, network, or physical environment. If you 
 
 The scheduler may wake the agent once per day, but evolved devices can still run persistent services and software continuously between wakes.
 
-That means a "kill" instruction written to `notes.md` or `human_message.txt` might not be processed soon enough for active incidents. Do not rely on the next cron run for emergency stop.
+That means a "kill" instruction written in repo state (for example `devices/<uuid>/state.json`) might not be processed soon enough for active incidents. Do not rely on the next cron run for emergency stop.
 
 For urgent containment, physically disconnect power and/or network access first, then perform repo cleanup steps after the device is offline.
 
@@ -43,7 +43,7 @@ Because cron may run only once per day while persistent software keeps running, 
 
 If you want the device to retire itself, place a directive in:
 
-- `devices/<uuid>/notes.md`
+- `devices/<uuid>/state.json` (for example as a high-priority `tasks[]` item marked `TODO`)
 
 Example:
 
@@ -57,9 +57,7 @@ Requirements:
 4. End by shutting down the machine.
 ```
 
-For immediate execution on next run, also write a one-off instruction in:
-
-- `devices/<uuid>/human_message.txt`
+There is no separate one-off message channel in this architecture. Use canonical state only.
 
 ## Cleanup After Termination
 

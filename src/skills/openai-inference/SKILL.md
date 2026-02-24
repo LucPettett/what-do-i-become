@@ -35,6 +35,7 @@ Use this skill when you need model-based reasoning from text questions, camera f
 3. Run `infer.py` with optional `--image` and `--web-search`.
 4. Save output JSON under your device directory for auditability.
 5. Use the returned output and confidence fields to decide the next action.
+6. Call `log_inference_artifact` with `input_images`, `inference_output`, `confidence`, and `action_taken`.
 
 ## Command templates
 
@@ -66,3 +67,4 @@ python3 src/skills/openai-inference/scripts/infer.py \
 - Keep prompts explicit about output shape, confidence thresholds, and required keys.
 - Use `--expect-json` for machine-consumable outputs; if parsing fails, treat as an incident.
 - Store the raw inference text plus parsed JSON so retries can recover.
+- Never leave an inference decision unlogged; persist it as an inference artifact.

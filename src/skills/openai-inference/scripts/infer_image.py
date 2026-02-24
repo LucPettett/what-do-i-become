@@ -27,6 +27,11 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional output path. If omitted, JSON is printed to stdout only.",
     )
+    parser.add_argument(
+        "--action-taken",
+        default="",
+        help="Optional action taken from the inference result for audit logging.",
+    )
     return parser.parse_args()
 
 
@@ -37,6 +42,12 @@ def main() -> None:
         raise FileNotFoundError(f"image file not found: {image_path}")
 
     result = run_inference(prompt=args.prompt, model=args.model, image_path=image_path, web_search=False)
+    if args.action_taken.strip():
+        result["action_taken"] = args.action_taken.strip()
+    if "confidence" not in result:
+        result["confidence"] = None
+    if "inference_output" not in result:
+        result["inference_output"] = str(result.get("output_text", ""))
     rendered = json.dumps(result, indent=2, ensure_ascii=True)
 
     if args.output:

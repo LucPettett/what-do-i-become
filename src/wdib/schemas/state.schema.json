@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wdib://schemas/state.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "device_id",
+    "awoke_on",
+    "day",
+    "purpose",
+    "status",
+    "tasks",
+    "hardware_requests",
+    "incidents",
+    "artifacts",
+    "last_summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "awoke_on": {
+      "type": "string",
+      "format": "date"
+    },
+    "day": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "purpose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["becoming", "spirit_path"],
+      "properties": {
+        "becoming": {"type": "string"},
+        "spirit_path": {"type": "string", "minLength": 1}
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACTIVE", "BLOCKED_HARDWARE", "ERROR"]
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "status", "created_on", "updated_on"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "description": {"type": "string"},
+          "status": {"type": "string", "enum": ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]},
+          "blocked_by": {"type": "string"},
+          "created_on": {"type": "string", "format": "date"},
+          "updated_on": {"type": "string", "format": "date"},
+          "completed_on": {"type": ["string", "null"], "format": "date"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "hardware_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "reason",
+          "status",
+          "detection",
+          "verify_command",
+          "requested_on",
+          "last_checked_on",
+          "detected_on",
+          "verified_on",
+          "verify_failures",
+          "notes"
+        ],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["OPEN", "DETECTED", "VERIFIED", "FAILED"]},
+          "detection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "value"],
+            "properties": {
+              "kind": {"type": "string", "enum": ["path_exists", "glob_exists", "command_success", "lsusb_contains"]},
+              "value": {"type": "string", "minLength": 1}
+            }
+          },
+          "verify_command": {"type": "string"},
+          "requested_on": {"type": "string", "format": "date"},
+          "last_checked_on": {"type": ["string", "null"], "format": "date"},
+          "detected_on": {"type": ["string", "null"], "format": "date"},
+          "verified_on": {"type": ["string", "null"], "format": "date"},
+          "verify_failures": {"type": "integer", "minimum": 0},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "incidents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "status", "severity", "summary", "created_on", "updated_on"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["OPEN", "RESOLVED"]},
+          "severity": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
+          "summary": {"type": "string"},
+          "created_on": {"type": "string", "format": "date"},
+          "updated_on": {"type": "string", "format": "date"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "description", "created_on"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "created_on": {"type": "string", "format": "date"}
+        }
+      }
+    },
+    "last_summary": {
+      "type": "string"
+    }
+  }
+}

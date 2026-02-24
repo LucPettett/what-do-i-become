@@ -30,8 +30,8 @@ fi
 echo ""
 echo "-> Installing Python packages..."
 if command -v python3 >/dev/null 2>&1; then
-  python3 -m pip install --break-system-packages openai pyyaml 2>/dev/null \
-    || python3 -m pip install openai pyyaml
+  python3 -m pip install --break-system-packages openai pyyaml jsonschema 2>/dev/null \
+    || python3 -m pip install openai pyyaml jsonschema
 else
   echo "  python3 is required but was not found in PATH"
   exit 1
@@ -148,87 +148,22 @@ export WDIB_DEVICE_ID="$DEVICE_ID"
 
 python3 - <<'PY'
 import os
-import platform
-import subprocess
-from datetime import date
+import sys
 from pathlib import Path
-
-import yaml
-
-
-def detect_board():
-    model = Path('/proc/device-tree/model')
-    if model.exists():
-        try:
-            return model.read_bytes().replace(b'\x00', b'').decode('utf-8', errors='ignore').strip()
-        except OSError:
-            pass
-
-    if platform.system() == 'Darwin':
-        try:
-            board = subprocess.check_output(['sysctl', '-n', 'hw.model'], text=True).strip()
-            if board:
-                return board
-        except Exception:
-            pass
-
-    return platform.node() or platform.machine() or 'unknown'
-
-
-def detect_ram():
-    try:
-        page_size = os.sysconf('SC_PAGE_SIZE')
-        phys_pages = os.sysconf('SC_PHYS_PAGES')
-        gib = (page_size * phys_pages) / float(1024 ** 3)
-        return f"{gib:.1f} GB"
-    except (ValueError, OSError, AttributeError):
-        return 'unknown'
-
-
-def detect_os():
-    os_release = Path('/etc/os-release')
-    if os_release.exists():
-        for line in os_release.read_text(encoding='utf-8').splitlines():
-            if line.startswith('PRETTY_NAME='):
-                return line.split('=', 1)[1].strip().strip('"')
-    return f"{platform.system()} {platform.release()}".strip()
-
 
 project_root = Path(os.environ['PROJECT_ROOT'])
 device_id = os.environ['WDIB_DEVICE_ID']
-device_dir = project_root / 'devices' / device_id
-sessions_dir = device_dir / 'sessions'
-device_yaml = device_dir / 'device.yaml'
-notes_file = device_dir / 'notes.md'
+src_dir = project_root / 'src'
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
 
-device_dir.mkdir(parents=True, exist_ok=True)
-sessions_dir.mkdir(parents=True, exist_ok=True)
+from wdib.storage.repository import ensure_layout, default_state, save_state  # noqa: E402
+from wdib.paths import SPIRIT_FILE  # noqa: E402
 
-if not notes_file.exists():
-    notes_file.write_text('', encoding='utf-8')
-
-if not device_yaml.exists():
-    payload = {
-        'id': device_id,
-        'awoke': date.today().isoformat(),
-        'day': 0,
-        'last_session': None,
-        'hardware': {
-            'board': detect_board(),
-            'ram': detect_ram(),
-            'os': detect_os(),
-            'arch': platform.machine() or 'unknown',
-        },
-        'becoming': '',
-        'status': 'FIRST_RUN',
-        'parts': [],
-        'part_requested': None,
-        'last_summary': '',
-    }
-    device_yaml.write_text(
-        yaml.safe_dump(payload, sort_keys=False, allow_unicode=True, width=120),
-        encoding='utf-8',
-    )
+paths = ensure_layout(device_id)
+if not paths['state'].exists():
+    state = default_state(device_id=device_id, spirit_path=str(SPIRIT_FILE))
+    save_state(device_id, state)
 PY
 
 chmod +x "$FRAMEWORK_DIR/run.sh" "$FRAMEWORK_DIR/setup.sh"

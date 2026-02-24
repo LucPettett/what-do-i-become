@@ -139,8 +139,8 @@ crontab -l
 
 Verify:
 
-- new files appear in `devices/<uuid>/`
-- `devices/<uuid>/wdib.log` is created and appends each run (including API/LLM errors)
+- new files appear in `devices/<uuid>/` (`state.json`, `events.ndjson`, `runtime/`)
+- a cycle writes `runtime/work_orders/*.json` and `runtime/worker_results/*.json`
 - push succeeds to your target repo
 
 ## Skills

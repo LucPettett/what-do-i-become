@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wrapper script: load src/.env then run the agent.
+# Wrapper script: load src/.env then run WDIB control-plane tick.
 
 set -euo pipefail
 
@@ -12,4 +12,4 @@ if [ -f .env ]; then
   set +a
 fi
 
-exec python3 agent.py
+exec python3 -m wdib.cli tick --pretty

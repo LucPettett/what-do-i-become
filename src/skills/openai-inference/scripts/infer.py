@@ -39,6 +39,11 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional output path. If omitted, JSON is printed to stdout only.",
     )
+    parser.add_argument(
+        "--action-taken",
+        default="",
+        help="Optional action taken from the inference result for audit logging.",
+    )
     return parser.parse_args()
 
 
@@ -58,6 +63,55 @@ def _extract_tool_calls(response: Any) -> list[str]:
     return sorted(set(tool_calls))
 
 
+def _parse_confidence(value: Any) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        parsed = float(value)
+    else:
+        text = str(value).strip()
+        if not text:
+            return None
+        if text.endswith("%"):
+            try:
+                parsed = float(text[:-1].strip()) / 100.0
+            except ValueError:
+                return None
+        else:
+            try:
+                parsed = float(text)
+            except ValueError:
+                return None
+
+    if parsed >= 2 and parsed <= 100:
+        parsed = parsed / 100.0
+    if parsed < 0 or parsed > 1:
+        return None
+    return round(parsed, 4)
+
+
+def _extract_confidence(parsed_json: Any) -> float | None:
+    if not isinstance(parsed_json, dict):
+        return None
+    for key in ("confidence", "confidence_score", "score", "probability"):
+        if key in parsed_json:
+            confidence = _parse_confidence(parsed_json.get(key))
+            if confidence is not None:
+                return confidence
+    return None
+
+
+def _extract_action(parsed_json: Any) -> str:
+    if not isinstance(parsed_json, dict):
+        return ""
+    for key in ("action_taken", "next_action", "recommended_action", "action"):
+        value = parsed_json.get(key)
+        text = str(value or "").strip()
+        if text:
+            return text
+    return ""
+
+
 def run_inference(
     *,
     prompt: str,
@@ -71,7 +125,7 @@ def run_inference(
     from openai import OpenAI
 
     content: list[dict[str, Any]] = [{"type": "input_text", "text": prompt}]
-    image_path_text = ""
+    input_images: list[str] = []
 
     if image_path is not None:
         mime_type, image_b64 = encode_image(image_path)
@@ -81,7 +135,7 @@ def run_inference(
                 "image_url": f"data:{mime_type};base64,{image_b64}",
             }
         )
-        image_path_text = str(image_path)
+        input_images.append(str(image_path))
 
     request_payload: dict[str, Any] = {
         "model": model,
@@ -100,11 +154,13 @@ def run_inference(
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "model": model,
         "prompt": prompt,
-        "image_path": image_path_text,
+        "image_path": input_images[0] if input_images else "",
+        "input_images": input_images,
         "web_search": web_search,
         "response_id": getattr(response, "id", None),
         "tool_calls": tool_calls,
         "output_text": output_text,
+        "inference_output": output_text,
     }
 
 
@@ -137,6 +193,20 @@ def main() -> None:
         result["json_error"] = parse_error
         if parsed_json is not None:
             result["parsed_json"] = parsed_json
+            extracted_confidence = _extract_confidence(parsed_json)
+            if extracted_confidence is not None:
+                result["confidence"] = extracted_confidence
+            extracted_action = _extract_action(parsed_json)
+            if extracted_action:
+                result["action_taken"] = extracted_action
+
+    if args.action_taken.strip():
+        result["action_taken"] = args.action_taken.strip()
+
+    if "confidence" not in result:
+        result["confidence"] = None
+    if "action_taken" not in result:
+        result["action_taken"] = ""
 
     rendered = json.dumps(result, indent=2, ensure_ascii=True)
 

@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Build README dashboard from devices/*/device.yaml."""
+"""Build README dashboard from devices/*/state.json."""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
-
-import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 README_PATH = ROOT / "README.md"
@@ -26,22 +25,22 @@ def load_device_rows() -> list[dict[str, Any]]:
     if not DEVICES_DIR.exists():
         return rows
 
-    for device_yaml in sorted(DEVICES_DIR.glob("*/device.yaml")):
+    for state_json in sorted(DEVICES_DIR.glob("*/state.json")):
         try:
-            payload = yaml.safe_load(device_yaml.read_text(encoding="utf-8")) or {}
+            payload = json.loads(state_json.read_text(encoding="utf-8")) or {}
         except Exception:
             continue
 
-        full_id = str(payload.get("id") or device_yaml.parent.name).strip()
+        full_id = str(payload.get("device_id") or state_json.parent.name).strip()
         short_id = full_id[:8] if full_id else "-"
-        awoke = str(payload.get("awoke") or "-").strip() or "-"
+        awoke = str(payload.get("awoke_on") or "-").strip() or "-"
         day = payload.get("day")
         try:
             day_display = str(int(day))
         except (TypeError, ValueError):
             day_display = "0"
 
-        becoming = str(payload.get("becoming") or payload.get("spirit") or "").strip() or "-"
+        becoming = str((payload.get("purpose") or {}).get("becoming") or "").strip() or "-"
         status = str(payload.get("status") or "-").strip() or "-"
 
         rows.append(
@@ -85,7 +84,7 @@ def replace_dashboard(readme_text: str, dashboard_text: str) -> str:
 
     suffix = (
         "\n\n## Device Dashboard\n"
-        "Auto-generated from `devices/*/device.yaml`.\n\n"
+        "Auto-generated from `devices/*/state.json`.\n\n"
         f"{dashboard_text}\n"
     )
     return readme_text.rstrip() + suffix

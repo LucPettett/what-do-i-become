@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wdib://schemas/work_order.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "cycle_id",
+    "created_on",
+    "device_id",
+    "objective",
+    "constraints",
+    "allowed_paths",
+    "context",
+    "result_path",
+    "result_schema_version"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "cycle_id": {"type": "string", "minLength": 1},
+    "created_on": {"type": "string", "format": "date-time"},
+    "device_id": {"type": "string", "minLength": 1},
+    "objective": {"type": "string", "minLength": 1},
+    "constraints": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["becoming", "spirit_excerpt", "tasks", "hardware_requests", "incidents"],
+      "properties": {
+        "becoming": {"type": "string"},
+        "spirit_excerpt": {"type": "string"},
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title", "status"],
+            "properties": {
+              "id": {"type": "string"},
+              "title": {"type": "string"},
+              "status": {"type": "string"}
+            }
+          }
+        },
+        "hardware_requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "status"],
+            "properties": {
+              "id": {"type": "string"},
+              "name": {"type": "string"},
+              "status": {"type": "string"}
+            }
+          }
+        },
+        "incidents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title", "status"],
+            "properties": {
+              "id": {"type": "string"},
+              "title": {"type": "string"},
+              "status": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "result_path": {"type": "string", "minLength": 1},
+    "result_schema_version": {"const": "1.0"}
+  }
+}

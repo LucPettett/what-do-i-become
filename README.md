@@ -31,7 +31,7 @@ Devices running right now. Auto-generated from `devices/*/state.json`.
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Becoming | Status |
 | --- | --- | ---: | --- | --- |
-<!-- No devices yet. Add your first device using the setup guide. -->
+| - | - | 0 | - | - |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Hardware with a spirit

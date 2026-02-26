@@ -73,14 +73,11 @@ At runtime, user skills override bundled skills when names match.
 Current bundled examples:
 - `openai-inference` for text/image/web inference.
 - `coding-ops` for code writing, OS navigation, and bash execution.
-- `systematic-debugging` for root-cause-first bug resolution.
-- `test-driven-development` for strict red-green-refactor implementation.
-- `verification-before-completion` for evidence-first completion checks.
 
-Superpowers sync utility:
-- `./src/tools/import_superpowers.sh --core` imports the curated core from `obra/superpowers`.
-- `./src/tools/import_superpowers.sh --all` imports all upstream skills except `using-superpowers`.
-- WDIB worker prompt natively enforces these disciplines during execution (root-cause-first debugging, TDD for code changes, and verification before completion).
+WDIB worker prompts natively enforce engineering discipline during execution:
+- root-cause-first debugging for failures
+- tests-first for behavior/code changes
+- verification evidence before completion claims
 
 When a Skill conflicts with Spirit boundaries, Spirit wins.
 
@@ -199,10 +196,6 @@ It covers:
 - remote bootstrap with `./src/device/bootstrap_over_ssh.sh`.
 - memory reset with `./src/device/reset_device_memory.sh` (`soft` or `hard`).
 - `.env` and deploy-key wiring for repo pushes from the device.
-
-## Acknowledgements
-
-- Superpowers skills and workflow ideas from [obra/superpowers](https://github.com/obra/superpowers) (MIT License).
 
 ## Safety
 

@@ -125,27 +125,6 @@ Then reinitialize:
 ./src/run.sh
 ```
 
-## Optional: Import Superpowers Skills
-
-This repo can bundle a curated set of `obra/superpowers` skills for stronger engineering discipline.
-
-```bash
-./src/tools/import_superpowers.sh --core
-```
-
-That imports:
-- `systematic-debugging`
-- `test-driven-development`
-- `verification-before-completion`
-
-These disciplines are also enforced natively in WDIB worker prompts.
-
-To import all upstream skills except `using-superpowers`:
-
-```bash
-./src/tools/import_superpowers.sh --all
-```
-
 ## Skills
 
 Bundled skills live in `src/skills/`.

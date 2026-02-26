@@ -26,9 +26,9 @@ class CodexPromptTests(unittest.TestCase):
 
         prompt = _prompt_from_work_order(work_order)
 
-        self.assertIn("systematic-debugging", prompt)
-        self.assertIn("test-driven-development", prompt)
-        self.assertIn("verification-before-completion", prompt)
+        self.assertIn("find root cause before proposing fixes", prompt)
+        self.assertIn("write or update tests first", prompt)
+        self.assertIn("run concrete verification commands and report evidence", prompt)
         self.assertIn("Include verification evidence in worker_result.summary.", prompt)
         self.assertIn("WORK_ORDER_JSON:", prompt)
         self.assertIn('"objective": "Fix flaky parser task"', prompt)

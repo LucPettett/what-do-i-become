@@ -138,6 +138,8 @@ That imports:
 - `test-driven-development`
 - `verification-before-completion`
 
+These disciplines are also enforced natively in WDIB worker prompts.
+
 To import all upstream skills except `using-superpowers`:
 
 ```bash

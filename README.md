@@ -80,6 +80,7 @@ Current bundled examples:
 Superpowers sync utility:
 - `./src/tools/import_superpowers.sh --core` imports the curated core from `obra/superpowers`.
 - `./src/tools/import_superpowers.sh --all` imports all upstream skills except `using-superpowers`.
+- WDIB worker prompt natively enforces these disciplines during execution (root-cause-first debugging, TDD for code changes, and verification before completion).
 
 When a Skill conflicts with Spirit boundaries, Spirit wins.
 

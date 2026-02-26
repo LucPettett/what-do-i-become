@@ -1,155 +1,154 @@
 # Setup Guide
 
-Use this guide to provision and operate devices for `what-do-i-become`.
+WDIB setup is intentionally split into two steps:
 
-## Prepare Your Repo
+1. **Prepare your device**
+2. **Setup WDIB on your device**
 
-Do this once for your fork:
+This keeps first boot reliable and moves mutable setup to SSH where iteration is faster.
 
-```bash
-git clone https://github.com/<you>/what-do-i-become.git
-cd what-do-i-become
-cp src/.env.example src/.env
-nano src/.env
-```
+You will need:
 
-Set at minimum:
+- Your fork URL (for example `https://github.com/<you>/what-do-i-become.git`).
+- Wi-Fi SSID/password for the device
+- `OPENAI_API_KEY` (or your chosen provider key)
 
-- `WDIB_LLM_PROVIDER=openai`
-- `OPENAI_API_KEY=...`
+## Prepare Your Device
 
-Optional git settings:
+Your device can be prepared by you, or by Codex.
 
-- `WDIB_GIT_REMOTE=origin` (default)
-- `WDIB_GIT_BRANCH=` (optional explicit push target)
-- `WDIB_GIT_AUTO_PUSH=true` (default)
-- `WDIB_GIT_REMOTE_URL=...` (use if you want `setup.sh` to force a specific remote)
-- `WDIB_GIT_USER_NAME=...` and `WDIB_GIT_USER_EMAIL=...` (optional local identity override)
-
-## Add a device (fresh device / microSD first boot)
-
-Use this for Raspberry Pi-class devices when the microSD card is mounted on your laptop before first boot.
-
-Goal: pre-provision Wi-Fi and Git auth so the device can push without an initial manual SSH setup session.
-
-Requirements:
-
-- boot partition mounted locally (example macOS path: `/Volumes/bootfs`)
-- image supports first-boot files such as `wpa_supplicant.conf` and optionally `user-data` (cloud-init)
-
-### Prompt Template (Codex/Claude)
-
-```text
-The microSD card is mounted at /Volumes/bootfs.
-
-Please pre-provision it for what-do-i-become:
-1. Update /Volumes/bootfs/wpa_supplicant.conf with SSID "<WIFI_SSID>" and password "<WIFI_PASSWORD>".
-2. Ensure SSH is enabled (create /Volumes/bootfs/ssh if missing). For SSH your root password is "<ROOT_PASSWORD>".
-3. Generate an ed25519 keypair dedicated to this device/repo.
-4. Backup /Volumes/bootfs/user-data, then update it so first boot writes:
-   - /home/pi/.ssh/wdib_repo (private key, 0600)
-   - /home/pi/.ssh/wdib_repo.pub (public key, 0644)
-   - /home/pi/.ssh/config with:
-     Host github-wdib
-       HostName github.com
-       User git
-       IdentityFile ~/.ssh/wdib_repo
-       IdentitiesOnly yes
-5. In first-boot commands, set ownership/permissions, add github.com to known_hosts, and add git URL rewrite:
-   https://github.com/<GITHUB_OWNER>/ -> git@github-wdib:<GITHUB_OWNER>/
-6. Print only the public key and fingerprint, list changed files, and run sync.
-
-Do not print private keys in output and do not write credentials into this repository.
-```
-
-### After the patch
-
-1. In GitHub (`<you>/what-do-i-become`), open `Settings` -> `Deploy keys` -> `Add deploy key`.
-2. Paste the generated public key.
-3. Enable `Allow write access`.
-4. Boot the device.
-5. If clone/setup was not automated in `user-data`, continue with `Add a device (existing device)` below.
-
-Revocation: delete that deploy key to immediately stop pushes from that device.
-
-## Add a device (existing device / already running OS)
-
-Use this when the device is already booted and reachable by SSH or local console.
-
-1. Install dependencies:
+### Codex-Assisted
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y python3 python3-pip git i2c-tools
-python3 --version
-git --version
+codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
 ```
 
-2. Clone repo:
+### Manual
 
 ```bash
-git clone https://github.com/<you>/what-do-i-become.git
-cd what-do-i-become
+./src/device/check_bootfs.sh /Volumes/bootfs
 ```
 
-3. Create a device-specific deploy key on the device:
+This validates the boot partition and shows whether SSH/network/bootstrap files are present.
+
+Minimum expected outcome before ejecting card:
+
+- `/Volumes/bootfs/ssh` exists
+- network config is present (`wpa_supplicant.conf` and/or `network-config`)
+- no blocking filesystem errors from `check_bootfs.sh`
+
+## Setup WDIB On Your Device
+
+After the Pi boots and has an IP address, setup can be done by you or by Codex.
+
+### Codex-Assisted
 
 ```bash
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-ssh-keygen -t ed25519 -f ~/.ssh/wdib_repo -C "wdib-$(hostname)-$(date +%F)" -N ""
-cat ~/.ssh/wdib_repo.pub
+codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Configure src/.env with my API key, run setup, run once, and report exactly what is still blocking."
 ```
 
-4. In GitHub (`<you>/what-do-i-become`), add deploy key with write access:
+### Manual
+
+```bash
+./src/device/bootstrap_over_ssh.sh \
+  --host <device_ip> \
+  --user pi \
+  --repo https://github.com/<you>/what-do-i-become.git \
+  --openai-api-key "$OPENAI_API_KEY"
+```
+
+This script:
+
+- installs required packages
+- clones/pulls the repo on device
+- creates `~/.ssh/wdib_repo` deploy key (if missing)
+- sets `origin` to `git@github-wdib:<you>/what-do-i-become.git` for GitHub repos
+- writes `src/.env` values (`WDIB_LLM_PROVIDER`, `WDIB_LLM_MODEL`, optional `OPENAI_API_KEY`, `WDIB_GIT_REMOTE_URL`)
+- runs `./src/setup.sh` and one `./src/run.sh`
+
+### Important Deploy-Key Step
+
+`bootstrap_over_ssh.sh` prints the device public key between:
+
+- `=== WDIB_DEPLOY_KEY_PUBLIC ===`
+- `=== WDIB_DEPLOY_KEY_PUBLIC_END ===`
+
+Add that key in GitHub:
 
 1. `Settings` -> `Deploy keys` -> `Add deploy key`
-2. paste `~/.ssh/wdib_repo.pub`
-3. enable `Allow write access`
+2. paste the printed key
+3. enable **Allow write access**
 
-5. Pin this repo to that key:
+Then rerun setup once to confirm push auth.
 
-```bash
-cat >> ~/.ssh/config <<'EOF'
-Host github-wdib
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/wdib_repo
-  IdentitiesOnly yes
-EOF
+## Quick Verification
 
-git remote set-url origin git@github-wdib:<you>/what-do-i-become.git
-```
-
-If you use `WDIB_GIT_REMOTE_URL` in `src/.env`, match the same alias:
-
-```dotenv
-WDIB_GIT_REMOTE_URL=git@github-wdib:<you>/what-do-i-become.git
-```
-
-6. Run setup and first wake-up:
+On the device (or via SSH):
 
 ```bash
-chmod +x src/setup.sh
+cd ~/development/what-do-i-become
+git remote -v
+./src/run.sh
+```
+
+In GitHub, confirm new commits under `devices/<uuid>/`.
+
+## Reset and Rollback
+
+When you need to wipe a device's memory/state and start fresh, run:
+
+```bash
+./src/device/reset_device_memory.sh --soft --yes
+```
+
+Modes:
+
+- `--soft`: clears `devices/<uuid>/` memory, keeps same device UUID.
+- `--hard`: clears memory and rotates UUID on next `./src/setup.sh`.
+
+Examples:
+
+```bash
+# Keep same UUID
+./src/device/reset_device_memory.sh --soft --yes
+
+# New UUID on next setup
+./src/device/reset_device_memory.sh --hard --yes
+```
+
+By default, reset creates a rollback backup at `devices/_resets/<timestamp>_<uuid>/`.
+
+Then reinitialize:
+
+```bash
 ./src/setup.sh
 ./src/run.sh
-git remote -v
-crontab -l
 ```
 
-Verify:
+## Optional: Import Superpowers Skills
 
-- new files appear in `devices/<uuid>/` (`state.json`, `events.ndjson`, `runtime/`)
-- a cycle writes `runtime/work_orders/*.json` and `runtime/worker_results/*.json`
-- push succeeds to your target repo
+This repo can bundle a curated set of `obra/superpowers` skills for stronger engineering discipline.
+
+```bash
+./src/tools/import_superpowers.sh --core
+```
+
+That imports:
+- `systematic-debugging`
+- `test-driven-development`
+- `verification-before-completion`
+
+To import all upstream skills except `using-superpowers`:
+
+```bash
+./src/tools/import_superpowers.sh --all
+```
 
 ## Skills
 
 Bundled skills live in `src/skills/`.
 
-Add your own skills in `skills/<name>/SKILL.md`. User skills are loaded with higher precedence than bundled skills, so matching names override bundled behavior. No skill feature flags are required.
-
-Revocation: delete this deploy key in repo settings to immediately block access.
+Add your own skills in `skills/<name>/SKILL.md`. User skills are loaded with higher precedence than bundled skills, so matching names override bundled behavior.
 
 ## Safety and termination
 

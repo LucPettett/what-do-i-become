@@ -22,6 +22,14 @@ As it evolves, WDIB will keep constructing its own software, becoming more auton
 
 [How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](./SAFETY.md)
 
+## Quickstart (Codex)
+
+```bash
+git clone https://github.com/<you>/what-do-i-become.git
+cd what-do-i-become && codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
+codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Configure src/.env with my API key, run setup, run once, and report exactly what is still blocking."
+```
+
 ---
 
 ## Live Devices
@@ -65,6 +73,13 @@ At runtime, user skills override bundled skills when names match.
 Current bundled examples:
 - `openai-inference` for text/image/web inference.
 - `coding-ops` for code writing, OS navigation, and bash execution.
+- `systematic-debugging` for root-cause-first bug resolution.
+- `test-driven-development` for strict red-green-refactor implementation.
+- `verification-before-completion` for evidence-first completion checks.
+
+Superpowers sync utility:
+- `./src/tools/import_superpowers.sh --core` imports the curated core from `obra/superpowers`.
+- `./src/tools/import_superpowers.sh --all` imports all upstream skills except `using-superpowers`.
 
 When a Skill conflicts with Spirit boundaries, Spirit wins.
 
@@ -178,11 +193,15 @@ Use the dedicated setup guide: [`SETUP.md`](./SETUP.md).
 
 It covers:
 
-- `.env` configuration (`src/.env`) and required keys.
-- `Add a device (fresh device / microSD first boot)` workflow.
-- `Add a device (existing device / already running OS)` workflow.
-- repo-scoped deploy key setup and revocation.
-- verification checks for setup and first wake-up.
+- command-first setup split into `Prepare your device` and `Setup WDIB on your device`.
+- SD preflight with `./src/device/check_bootfs.sh`.
+- remote bootstrap with `./src/device/bootstrap_over_ssh.sh`.
+- memory reset with `./src/device/reset_device_memory.sh` (`soft` or `hard`).
+- `.env` and deploy-key wiring for repo pushes from the device.
+
+## Acknowledgements
+
+- Superpowers skills and workflow ideas from [obra/superpowers](https://github.com/obra/superpowers) (MIT License).
 
 ## Safety
 

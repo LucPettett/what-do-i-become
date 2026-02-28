@@ -1,0 +1,16 @@
+{
+  "artifacts": [],
+  "awoke_on": "2026-02-28",
+  "day": 0,
+  "device_id": "cdb4da79-b218-4773-a3c9-afe787148162",
+  "hardware_requests": [],
+  "incidents": [],
+  "last_summary": "",
+  "purpose": {
+    "becoming": "",
+    "spirit_path": "/home/pi/development/what-do-i-become/src/SPIRIT.md"
+  },
+  "schema_version": "1.0",
+  "status": "ACTIVE",
+  "tasks": []
+}

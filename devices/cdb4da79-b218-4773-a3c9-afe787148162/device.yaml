@@ -1,0 +1,14 @@
+id: cdb4da79-b218-4773-a3c9-afe787148162
+awoke: '2026-02-22'
+day: 0
+last_session: null
+hardware:
+  board: Raspberry Pi 5 Model B Rev 1.1
+  ram: 7.9 GB
+  os: Debian GNU/Linux 13 (trixie)
+  arch: aarch64
+becoming: ''
+status: FIRST_RUN
+parts: []
+part_requested: null
+last_summary: ''

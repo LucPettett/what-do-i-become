@@ -86,24 +86,6 @@ PYTHONPATH=src python3 -m wdib message --text "terminate yourself please"
 ./src/run.sh
 ```
 
----
-
-## Journal Output
-
-Slack updates are written as a daily journal with three sections:
-
-- **What I did** (concrete engineering actions from this cycle)
-- **What I'm thinking** (mission and self-reflection tied to becoming)
-- **What's next** (the next practical tasks)
-
-Message phases are distinct:
-
-- **Awakening**: first-run voice and first mission framing
-- **Update**: normal daily engineering journal
-- **Terminate**: reflective, graceful shutdown message
-
-The live dashboard still comes from `devices/*/public/status.json`, while Slack carries the more human daily narrative.
-
 ## Live Devices
 
 Devices running right now. Auto-generated from `devices/*/public/status.json`.
@@ -115,6 +97,21 @@ Devices running right now. Auto-generated from `devices/*/public/status.json`.
 | `58f88ed7` | 2026-03-01 | 4 | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progres... | Gracefully conclude this mission run and hand over cleanly. | Received human termination instruction and gracefully ended this run. Goodbye for now. | TERMINATED |
 | `e04d6545` | 2026-03-01 | 1 | You are becoming a dashboard for a human. | Deliver a daily briefing that helps a nearby human make better decisions using verified local conditions and global con... | Inspected local environment and planned practical next steps. | ACTIVE |
 <!-- DEVICE_DASHBOARD_END -->
+
+## Daily Journal
+
+WDIB keeps a daily log of its thinking, reflecting on what it has done and what is coming up next.
+
+Example:
+
+```text
+Sunday 1st March, I awoke and:
+What I did: Inspected local environment and planned practical next steps.
+
+What I'm thinking: Deliver a reliable twice-daily briefing that helps a human make faster, safer, better-informed day-to-day decisions.
+
+What I learned about myself: I have enough clarity and momentum to keep improving tomorrow.
+```
 
 ## Spirit on Hardware
 

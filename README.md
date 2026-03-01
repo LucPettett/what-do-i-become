@@ -97,7 +97,7 @@ Auto-generated from `devices/*/public/status.json`
 
 | Device | Day | Details |
 |--------|-----|---------|
-| - | 0 | - |
+| `dd65b183` | 1 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Deliver a daily local-first briefing that helps a nearby human make better decisions using verified on-device observati...<br>**Last Activity:** Local physical/environment inspection completed with machine-observed evidence. |
 
 ---
 

@@ -10,6 +10,7 @@ from ..contracts import dump_json, load_json, validate_payload
 from ..paths import (
     DEVICES_DIR,
     EVENTS_FILE_NAME,
+    HUMAN_MESSAGE_FILE_NAME,
     PUBLIC_DAILY_DIR_NAME,
     PUBLIC_DIR_NAME,
     PUBLIC_STATUS_FILE_NAME,
@@ -41,6 +42,7 @@ def device_paths(device_id: str) -> dict[str, Path]:
         "runtime": runtime_dir,
         "work_orders": runtime_dir / WORK_ORDERS_DIR_NAME,
         "worker_results": runtime_dir / WORKER_RESULTS_DIR_NAME,
+        "human_message": runtime_dir / HUMAN_MESSAGE_FILE_NAME,
         "public_dir": public_dir,
         "public_daily": public_dir / PUBLIC_DAILY_DIR_NAME,
         "public_status": public_dir / PUBLIC_STATUS_FILE_NAME,

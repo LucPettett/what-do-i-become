@@ -64,6 +64,26 @@ def _next_task_titles(tasks: list[dict[str, Any]]) -> list[str]:
     return picked
 
 
+def _hardware_focus(hardware_requests: list[dict[str, Any]]) -> list[str]:
+    focus: list[str] = []
+    for request in hardware_requests:
+        status = str(request.get("status") or "").upper()
+        if status not in {"OPEN", "DETECTED"}:
+            continue
+        name = _sanitize(str(request.get("name") or "Hardware item"), max_len=80)
+        reason = _sanitize(str(request.get("reason") or ""), max_len=120)
+        if reason:
+            line = f"{name}: {reason}"
+        else:
+            line = name
+        if status == "DETECTED":
+            line = f"{line} (detected, awaiting verification)"
+        focus.append(line)
+        if len(focus) >= 3:
+            break
+    return focus
+
+
 def _safe_reflection(summary_hint: str) -> str:
     cleaned = _sanitize(summary_hint, max_len=160)
     if not cleaned:
@@ -154,6 +174,30 @@ def _recent_activity(summary_hint: str, objective_hint: str) -> str:
     return "Made steady progress on mission-aligned work."
 
 
+def _self_observation(
+    tasks: list[dict[str, Any]],
+    hardware_requests: list[dict[str, Any]],
+    incidents: list[dict[str, Any]],
+) -> str:
+    waiting_hardware = sum(
+        1 for item in hardware_requests if str(item.get("status") or "").upper() in {"OPEN", "DETECTED"}
+    )
+    incidents_open = _count_status(incidents, "OPEN")
+    in_progress = _count_status(tasks, "IN_PROGRESS")
+    todo = _count_status(tasks, "TODO")
+
+    if waiting_hardware > 0:
+        return (
+            "I can reason and plan in software, but I still need physical hardware "
+            "verification before I can complete this part of my mission."
+        )
+    if incidents_open > 0:
+        return "I found reliability issues that I need to resolve before I can trust this path."
+    if in_progress > 0 or todo > 0:
+        return "I have enough clarity and momentum to keep improving tomorrow."
+    return "I am still mapping my environment and defining the next meaningful step."
+
+
 def build_public_status(
     *,
     device_id: str,
@@ -170,6 +214,15 @@ def build_public_status(
     tasks = list(state.get("tasks") or [])
     hardware_requests = list(state.get("hardware_requests") or [])
     incidents = list(state.get("incidents") or [])
+    state_status = str(state.get("status") or "UNKNOWN")
+    terminated = state_status.upper() == "TERMINATED"
+    next_tasks = [] if terminated else _next_task_titles(tasks)
+    hardware_focus = [] if terminated else _hardware_focus(hardware_requests)
+    self_observation = (
+        "I received a human termination command and gracefully closed this chapter."
+        if terminated
+        else _self_observation(tasks, hardware_requests, incidents)
+    )
 
     return {
         "schema_version": "1.0",
@@ -179,12 +232,14 @@ def build_public_status(
         "date": at.date().isoformat(),
         "first_awoke_on": str(state.get("awoke_on") or at.date().isoformat()),
         "day": int(day),
-        "status": str(state.get("status") or "UNKNOWN"),
+        "status": state_status,
         "worker_status": str(worker_status or "UNKNOWN"),
         "purpose": _extract_spirit_purpose(spirit_text) or "Unset (add a mission in SPIRIT.md).",
         "becoming": _sanitize(str((state.get("purpose") or {}).get("becoming") or "")),
         "recent_activity": _recent_activity(summary_hint, objective_hint),
-        "next_tasks": _next_task_titles(tasks),
+        "next_tasks": next_tasks,
+        "hardware_focus": hardware_focus,
+        "self_observation": self_observation,
         "counts": {
             "tasks": {
                 "todo": _count_status(tasks, "TODO"),

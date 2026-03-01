@@ -43,7 +43,7 @@
     },
     "status": {
       "type": "string",
-      "enum": ["ACTIVE", "BLOCKED_HARDWARE", "ERROR"]
+      "enum": ["ACTIVE", "BLOCKED_HARDWARE", "ERROR", "TERMINATED"]
     },
     "tasks": {
       "type": "array",

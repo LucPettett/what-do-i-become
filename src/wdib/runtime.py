@@ -9,6 +9,7 @@ from typing import Any
 from .adapters.codex_cli import CodexRunFailure, execute_work_order
 from .adapters.git_repo import commit_device_changes
 from .control.hardware import probe_hardware_requests
+from .control.human_messages import is_terminate_command, load_and_clear_human_message
 from .control.planner import plan_work_order
 from .control.reducer import apply_worker_result
 from .control.spirit import load_spirit_text
@@ -165,6 +166,24 @@ def run_tick() -> dict[str, Any]:
         save_state(device_id, state)
         append_event(device_id, pre_cycle_event)
 
+    pending_human_message = load_and_clear_human_message(device_id)
+    if pending_human_message:
+        append_event(
+            device_id,
+            {
+                "type": "HUMAN_MESSAGE_RECEIVED",
+                "message": pending_human_message[:500],
+            },
+        )
+
+    if str(state.get("status") or "").upper() == "TERMINATED" and not pending_human_message:
+        return {
+            "device_id": device_id,
+            "status": "TERMINATED",
+            "skipped": True,
+            "summary": "Device is terminated; no cycle was run.",
+        }
+
     previous_day = int(state.get("day") or 0)
     day = previous_day + 1
     cycle_id = _cycle_id(day)
@@ -182,6 +201,95 @@ def run_tick() -> dict[str, Any]:
     )
 
     try:
+        if pending_human_message and is_terminate_command(pending_human_message):
+            state["status"] = "TERMINATED"
+            state["day"] = day
+            state.setdefault("purpose", {})["becoming"] = "Gracefully conclude this mission run and hand over cleanly."
+            state["last_summary"] = (
+                "Received human termination instruction and gracefully ended this run. "
+                "Goodbye for now."
+            )
+            save_state(device_id, state)
+            append_event(
+                device_id,
+                {
+                    "type": "HUMAN_COMMAND_TERMINATE",
+                    "cycle_id": cycle_id,
+                    "day": day,
+                    "message": pending_human_message[:500],
+                },
+            )
+
+            session_payload = {
+                "date": run_date,
+                "cycle_id": cycle_id,
+                "day": day,
+                "status": state.get("status"),
+                "summary": state.get("last_summary", ""),
+                "work_order_path": "",
+                "worker_result_path": "",
+                "worker_status": "TERMINATED",
+            }
+            session_file = save_session_record(device_id, day, session_payload)
+
+            public_status_payload = build_public_status(
+                device_id=device_id,
+                cycle_id=cycle_id,
+                day=day,
+                state=state,
+                worker_status="TERMINATED",
+                spirit_text=spirit_text,
+                summary_hint=str(state.get("last_summary") or ""),
+                objective_hint="Human requested device termination.",
+                now=started_at,
+            )
+            public_status_file = save_public_status(device_id, public_status_payload)
+            public_daily_summary = build_public_daily_summary(
+                status_payload=public_status_payload,
+                objective="Human requested device termination.",
+                summary_hint=str(state.get("last_summary") or ""),
+                now=started_at,
+            )
+            public_daily_file = save_public_daily_summary(device_id, day, run_date, public_daily_summary)
+
+            git_info = commit_device_changes(
+                device_id,
+                day=day,
+                status=str(state.get("status")),
+                publish_paths=[str(public_status_file), str(public_daily_file)],
+            )
+            append_event(
+                device_id,
+                {
+                    "type": "CYCLE_COMPLETED",
+                    "cycle_id": cycle_id,
+                    "day": day,
+                    "status": state.get("status"),
+                    "git": git_info,
+                },
+            )
+
+            notification_results = send_cycle_notifications(
+                status_payload=public_status_payload,
+                git_info=git_info,
+                run_date=run_date,
+            )
+            _append_notification_events(device_id, cycle_id, day, notification_results)
+
+            return {
+                "device_id": device_id,
+                "cycle_id": cycle_id,
+                "day": day,
+                "status": state.get("status"),
+                "summary": state.get("last_summary"),
+                "session_path": str(session_file),
+                "public_status_path": str(public_status_file),
+                "public_daily_path": str(public_daily_file),
+                "git": git_info,
+                "notifications": notification_results,
+                "terminated": True,
+            }
+
         hardware_events = probe_hardware_requests(state, timeout_seconds=command_timeout_seconds())
         for event in hardware_events:
             event["cycle_id"] = cycle_id

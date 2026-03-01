@@ -119,6 +119,16 @@ git remote -v
 
 In GitHub, confirm new commits under `devices/<uuid>/public/`.
 
+## Human command channel
+
+Queue a plain-text human instruction for next tick:
+
+```bash
+cd ~/development/what-do-i-become
+PYTHONPATH=src python3 -m wdib message --text "terminate and say goodbye"
+./src/run.sh
+```
+
 ## Reset and Rollback
 
 When you need to wipe a device's memory/state and start fresh, run:

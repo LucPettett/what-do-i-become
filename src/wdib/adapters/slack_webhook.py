@@ -87,13 +87,25 @@ def _cycle_icon_emoji(status_payload: dict[str, Any]) -> str:
     return _update_icon_emoji()
 
 
+def _pluralize(count: int, singular: str, plural: str | None = None) -> str:
+    if count == 1:
+        return singular
+    return plural or f"{singular}s"
+
+
 def _build_cycle_text_human(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
     purpose = str(status_payload.get("purpose") or "").strip()
     becoming = str(status_payload.get("becoming") or "").strip()
     recent_activity = str(status_payload.get("recent_activity") or "").strip()
+    self_observation = str(status_payload.get("self_observation") or "").strip()
     next_tasks = [
         str(item).strip()
         for item in list(status_payload.get("next_tasks") or [])
+        if str(item).strip()
+    ]
+    hardware_focus = [
+        str(item).strip()
+        for item in list(status_payload.get("hardware_focus") or [])
         if str(item).strip()
     ]
     pushed = bool(git_info.get("pushed"))
@@ -104,41 +116,60 @@ def _build_cycle_text_human(status_payload: dict[str, Any], git_info: dict[str, 
 
     todo = int(task_counts.get("todo") or 0)
     in_progress = int(task_counts.get("in_progress") or 0)
+    done = int(task_counts.get("done") or 0)
     blocked = int(task_counts.get("blocked") or 0)
     waiting_hardware = int(hardware_counts.get("open") or 0) + int(hardware_counts.get("detected") or 0)
 
     lines = [f"*{_human_date(run_date)}, I awoke and:*"]
     if recent_activity:
-        lines.append(f"- What I did: {recent_activity}")
+        lines.append(f"• *What I did:* {recent_activity}")
     else:
-        lines.append("- What I did: Kept moving forward on my mission.")
+        lines.append("• *What I did:* Kept moving forward on my mission.")
 
     if becoming:
-        lines.append(f"- What I'm thinking: {becoming}")
+        lines.append(f"• *What I'm thinking:* {becoming}")
     elif purpose:
-        lines.append(f"- What I'm thinking: {purpose}")
+        lines.append(f"• *What I'm thinking:* {purpose}")
     else:
-        lines.append("- What I'm thinking: I need to define my direction more clearly.")
+        lines.append("• *What I'm thinking:* I need to define my direction more clearly.")
+
+    if self_observation:
+        lines.append(f"• *What I learned about myself:* {self_observation}")
 
     if next_tasks:
-        lines.append(f"- What's next: {next_tasks[0]}")
+        lines.append(f"• *What's next:* {next_tasks[0]}")
         for task_title in next_tasks[1:3]:
-            lines.append(f"- Then: {task_title}")
+            lines.append(f"• *Then:* {task_title}")
     elif todo or in_progress or blocked:
-        lines.append(f"- What's next: {in_progress} in progress, {todo} todo, {blocked} blocked.")
+        lines.append(f"• *What's next:* Continue with {in_progress} in progress, {todo} queued, {blocked} blocked.")
     else:
-        lines.append("- What's next: Continue observation and propose the next concrete task.")
+        lines.append("• *What's next:* Continue observation and propose the next concrete task.")
 
+    engineering_bits: list[str] = []
+    if in_progress or todo or blocked:
+        engineering_bits.append(f"{in_progress} in progress, {todo} queued, {blocked} blocked")
+    if done:
+        engineering_bits.append(f"{done} completed")
     if waiting_hardware:
-        lines.append(f"- Waiting on hardware verification: {waiting_hardware} request(s).")
+        engineering_bits.append(
+            f"{waiting_hardware} {_pluralize(waiting_hardware, 'hardware item')} awaiting verification"
+        )
     if incidents_open:
-        lines.append(f"- Open incidents to resolve: {incidents_open}.")
+        engineering_bits.append(f"{incidents_open} open {_pluralize(incidents_open, 'incident')}")
+    if engineering_bits:
+        lines.append(f"• *Engineering breakdown:* {'; '.join(engineering_bits)}.")
+
+    if hardware_focus:
+        lines.append(f"• *Hardware focus:* {hardware_focus[0]}")
+        for detail in hardware_focus[1:3]:
+            lines.append(f"• *Also:* {detail}")
+
 
     if pushed:
-        lines.append("- Shared a sanitized daily update to GitHub.")
+        lines.append("• *Published:* Shared a sanitized daily update to GitHub.")
     else:
-        lines.append("- Saved a sanitized daily update locally (GitHub push is still pending).")
-    lines.append("- Detailed logs remain on-device.")
+        lines.append("• *Published:* Saved a sanitized daily update locally (GitHub push is still pending).")
+    lines.append("• *Privacy:* Detailed logs remain on-device.")
     return "\n".join(lines)
 
 

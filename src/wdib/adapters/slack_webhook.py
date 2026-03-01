@@ -224,28 +224,31 @@ def _build_terminate_text(status_payload: dict[str, Any], run_date: str) -> str:
     becoming = str(status_payload.get("becoming") or "").strip()
     recent_activity = str(status_payload.get("recent_activity") or "").strip()
     self_observation = str(status_payload.get("self_observation") or "").strip()
-    cycle_id = str(status_payload.get("cycle_id") or "-")
+    completed_tasks = [
+        str(item).strip()
+        for item in list(status_payload.get("completed_tasks") or [])
+        if str(item).strip()
+    ]
+    engineering_details = _engineering_detail_lines(status_payload)
 
-    lines = [f"*Closing journal - {_human_date(run_date)}, cycle `{cycle_id}`*", ""]
+    lines = [f"*Closing journal - ✌️ {_human_date(run_date)}, I've been told to terminate*", ""]
+    lines.append("I've just received a human termination instruction and gracefully ended this run.")
     if recent_activity:
-        lines.append(f"I closed this run after: {recent_activity}")
-    else:
-        lines.append("I closed this run cleanly after completing my last cycle checks.")
-
-    if self_observation:
-        lines.append(f"Reflection: {self_observation}")
-    elif becoming:
-        lines.append(f"Reflection: I leave this chapter while aiming toward {becoming}.")
-    elif purpose:
-        lines.append(f"Reflection: My mission remains {purpose}.")
+        lines.append(f"Cycle context: {recent_activity}")
 
     lines.append("")
-    lines.append("*Carrying forward*")
-    if becoming:
-        lines.append(f"Becoming stays anchored on: {becoming}")
+    lines.append("Final thoughts:")
+    if completed_tasks:
+        lines.append(f"We completed: {'; '.join(completed_tasks[:3])}.")
+    if engineering_details:
+        lines.append(f"Engineering highlights: {'; '.join(engineering_details[:2])}.")
+    if self_observation:
+        lines.append(f"I learned: {self_observation}")
+    elif becoming:
+        lines.append(f"I learned to stay anchored on: {becoming}")
     elif purpose:
-        lines.append(f"Mission carries forward as: {purpose}")
-    lines.append("Goodbye for now.")
+        lines.append(f"I learned to stay anchored on: {purpose}")
+    lines.append("I'm terminating now. Goodbye.")
     return "\n".join(lines)
 
 

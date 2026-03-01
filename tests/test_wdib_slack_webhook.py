@@ -104,6 +104,11 @@ class SlackWebhookFormattingTests(unittest.TestCase):
             "becoming": "Gracefully conclude this mission run and hand over cleanly.",
             "recent_activity": "Received human termination instruction and gracefully ended this run.",
             "self_observation": "I received a human termination command and gracefully closed this chapter.",
+            "completed_tasks": ["Implemented local weather feed ingestion", "Shipped first daily briefing template"],
+            "engineering_details": [
+                "`python3 -m unittest` -> 21 tests passed",
+                "`ip -brief addr` -> wlan0 UP [redacted-ip]/24",
+            ],
             "counts": {
                 "tasks": {"todo": 0, "in_progress": 0, "done": 2, "blocked": 0},
                 "hardware_requests": {"open": 0, "detected": 0, "verified": 0, "failed": 0},
@@ -113,9 +118,12 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {}, clear=False):
             text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
 
-        self.assertIn("Closing journal", text)
-        self.assertIn("*Carrying forward*", text)
-        self.assertIn("Goodbye for now.", text)
+        self.assertIn("Closing journal - ✌️", text)
+        self.assertIn("I've been told to terminate", text)
+        self.assertIn("Final thoughts:", text)
+        self.assertIn("We completed:", text)
+        self.assertIn("Engineering highlights:", text)
+        self.assertIn("I'm terminating now. Goodbye.", text)
         self.assertNotIn("•", text)
 
     def test_detailed_style_keeps_structured_fields(self) -> None:

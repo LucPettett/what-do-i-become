@@ -333,14 +333,10 @@ def build_public_status(
     next_tasks = [] if terminated else _next_task_titles(tasks)
     hardware_focus = [] if terminated else _hardware_focus(hardware_requests)
     system_profile = "" if terminated else _system_profile_from_summary(summary_hint)
-    engineering_details = (
-        []
-        if terminated
-        else _engineering_details(
-            summary_hint,
-            completed_tasks=completed_tasks,
-            artifacts=list(state.get("artifacts") or []),
-        )
+    engineering_details = _engineering_details(
+        summary_hint,
+        completed_tasks=completed_tasks,
+        artifacts=list(state.get("artifacts") or []),
     )
     self_observation = (
         "I received a human termination command and gracefully closed this chapter."

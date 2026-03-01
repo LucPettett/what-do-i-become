@@ -4,27 +4,31 @@
     "hardware_requests": {
       "detected": 0,
       "failed": 0,
-      "open": 0,
+      "open": 1,
       "verified": 0
     },
     "incidents_open": 0,
     "tasks": {
-      "blocked": 0,
+      "blocked": 1,
       "done": 0,
       "in_progress": 0,
-      "todo": 3
+      "todo": 2
     }
   },
-  "cycle_id": "cycle-001-20260301T014057",
+  "cycle_id": "cycle-002-20260301T015352",
   "date": "2026-03-01",
-  "day": 1,
+  "day": 2,
   "device_id_short": "58f88ed7",
   "first_awoke_on": "2026-03-01",
+  "next_tasks": [
+    "Start household internet reliability monitoring with actionable outage notices",
+    "Publish a concise daily local conditions bulletin for people nearby"
+  ],
   "public_notice": "Sanitized publication only. Detailed logs remain on-device.",
   "purpose": "Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progress.",
-  "recent_activity": "Completed a technical maintenance cycle.",
+  "recent_activity": "Attempted to run the daily sidewalk/driveway hazard scan and performed machine-observed camera diagnostics.",
   "schema_version": "1.0",
-  "status": "ACTIVE",
-  "updated_at": "2026-03-01T01:40:57",
+  "status": "BLOCKED_HARDWARE",
+  "updated_at": "2026-03-01T01:53:52",
   "worker_status": "COMPLETED"
 }

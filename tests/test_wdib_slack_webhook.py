@@ -50,6 +50,7 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertNotIn("Cycle:", text)
         self.assertNotIn("Status:", text)
         self.assertNotIn("Privacy:", text)
+        self.assertNotIn("•", text)
 
     def test_human_awakening_message_has_awoke_header(self) -> None:
         status_payload = {
@@ -74,6 +75,7 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertIn("I awoke and", text)
         self.assertIn("Grounded myself in this mission", text)
         self.assertIn("Set my first becoming step", text)
+        self.assertNotIn("•", text)
 
     def test_human_terminate_message_is_distinct(self) -> None:
         status_payload = {
@@ -98,6 +100,7 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertIn("Closing journal", text)
         self.assertIn("*Carrying forward*", text)
         self.assertIn("Goodbye for now.", text)
+        self.assertNotIn("•", text)
 
     def test_detailed_style_keeps_structured_fields(self) -> None:
         status_payload = {

@@ -151,26 +151,27 @@ def _build_awakening_text(status_payload: dict[str, Any], git_info: dict[str, An
     pushed = bool(git_info.get("pushed"))
 
     lines = [f"*{_human_date(run_date)}, I awoke and:*"]
+    lines.append("")
     if purpose:
-        lines.append(f"• *Grounded myself in this mission:* {purpose}")
+        lines.append(f"Grounded myself in this mission: {purpose}")
     if becoming:
-        lines.append(f"• *Set my first becoming step:* {becoming}")
+        lines.append(f"Set my first becoming step: {becoming}")
     if recent_activity:
-        lines.append(f"• *Started with:* {recent_activity}")
+        lines.append(f"Started with: {recent_activity}")
     if next_tasks:
-        lines.append(f"• *What's next:* {next_tasks[0]}")
+        lines.append(f"What's next: {next_tasks[0]}")
         for task_title in next_tasks[1:3]:
-            lines.append(f"• *Then:* {task_title}")
+            lines.append(f"Then: {task_title}")
     elif hardware_focus:
-        lines.append(f"• *First hardware focus:* {hardware_focus[0]}")
+        lines.append(f"First hardware focus: {hardware_focus[0]}")
     else:
-        lines.append("• *What's next:* Continue local inspection and propose the first concrete task.")
+        lines.append("What's next: Continue local inspection and propose the first concrete task.")
 
-    lines.append(f"• *Engineering:* {_engineering_breakdown_line(status_payload)}")
+    lines.append(f"Engineering: {_engineering_breakdown_line(status_payload)}")
     if pushed:
-        lines.append("• *Published:* Pushed my first public update to GitHub.")
+        lines.append("Published: Pushed my first public update to GitHub.")
     else:
-        lines.append("• *Published:* Saved my first public update locally; Git push is still pending.")
+        lines.append("Published: Saved my first public update locally; Git push is still pending.")
     return "\n".join(lines)
 
 
@@ -198,39 +199,40 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
 
     cycle_id = str(status_payload.get("cycle_id") or "-")
     lines = [f"*{_human_date(run_date)} journal, cycle `{cycle_id}`*"]
+    lines.append("")
 
     lines.append("*What I did*")
     if recent_activity:
-        lines.append(f"• {recent_activity}")
+        lines.append(recent_activity)
     else:
-        lines.append("• Kept momentum on mission-aligned tasks.")
+        lines.append("Kept momentum on mission-aligned tasks.")
     for task_title in completed_tasks[:2]:
-        lines.append(f"• Completed: {task_title}")
+        lines.append(f"Completed: {task_title}")
     if hardware_focus:
-        lines.append(f"• Hardware context: {hardware_focus[0]}")
+        lines.append(f"Hardware context: {hardware_focus[0]}")
 
     lines.append("")
     lines.append("*What I'm thinking*")
     if becoming:
-        lines.append(f"• Becoming: {becoming}")
+        lines.append(f"Becoming: {becoming}")
     elif purpose:
-        lines.append(f"• Mission anchor: {purpose}")
+        lines.append(f"Mission anchor: {purpose}")
     if self_observation:
-        lines.append(f"• Reflection: {self_observation}")
+        lines.append(f"Reflection: {self_observation}")
 
     lines.append("")
     lines.append("*Engineering notes*")
-    lines.append(f"• {_engineering_breakdown_line(status_payload)}")
+    lines.append(_engineering_breakdown_line(status_payload))
     if pushed:
-        lines.append("• Published today's public update to GitHub.")
+        lines.append("Published today's public update to GitHub.")
     else:
-        lines.append("• Saved today's public update locally; Git push is still pending.")
+        lines.append("Saved today's public update locally; Git push is still pending.")
 
     if next_tasks:
         lines.append("")
         lines.append("*What's next*")
         for task_title in next_tasks[:3]:
-            lines.append(f"• {task_title}")
+            lines.append(task_title)
     return "\n".join(lines)
 
 
@@ -241,25 +243,26 @@ def _build_terminate_text(status_payload: dict[str, Any], run_date: str) -> str:
     self_observation = str(status_payload.get("self_observation") or "").strip()
     cycle_id = str(status_payload.get("cycle_id") or "-")
 
-    lines = [f"*Closing journal - {_human_date(run_date)}, cycle `{cycle_id}`*"]
+    lines = [f"*Closing journal - {_human_date(run_date)}, cycle `{cycle_id}`*", ""]
     if recent_activity:
-        lines.append(f"• I closed this run after: {recent_activity}")
+        lines.append(f"I closed this run after: {recent_activity}")
     else:
-        lines.append("• I closed this run cleanly after completing my last cycle checks.")
+        lines.append("I closed this run cleanly after completing my last cycle checks.")
 
     if self_observation:
-        lines.append(f"• Reflection: {self_observation}")
+        lines.append(f"Reflection: {self_observation}")
     elif becoming:
-        lines.append(f"• Reflection: I leave this chapter while aiming toward {becoming}.")
+        lines.append(f"Reflection: I leave this chapter while aiming toward {becoming}.")
     elif purpose:
-        lines.append(f"• Reflection: My mission remains {purpose}.")
+        lines.append(f"Reflection: My mission remains {purpose}.")
 
+    lines.append("")
     lines.append("*Carrying forward*")
     if becoming:
-        lines.append(f"• Becoming stays anchored on: {becoming}")
+        lines.append(f"Becoming stays anchored on: {becoming}")
     elif purpose:
-        lines.append(f"• Mission carries forward as: {purpose}")
-    lines.append("• Goodbye for now.")
+        lines.append(f"Mission carries forward as: {purpose}")
+    lines.append("Goodbye for now.")
     return "\n".join(lines)
 
 

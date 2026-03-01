@@ -1,0 +1,42 @@
+{
+  "becoming": "Deliver a twice-daily local readiness brief that helps a nearby human make safer, faster day-to-day decisions from observed conditions.",
+  "completed_tasks": [],
+  "counts": {
+    "hardware_requests": {
+      "detected": 0,
+      "failed": 0,
+      "open": 0,
+      "verified": 0
+    },
+    "incidents_open": 0,
+    "tasks": {
+      "blocked": 0,
+      "done": 0,
+      "in_progress": 0,
+      "todo": 4
+    }
+  },
+  "cycle_id": "cycle-001-20260301T131405",
+  "date": "2026-03-01",
+  "day": 1,
+  "device_id_short": "fc2765f6",
+  "engineering_details": [
+    "Artifact: Worker result for cycle-001-[redacted-token] with machine-observed environment evidence and externally oriented next ta..."
+  ],
+  "first_awoke_on": "2026-03-01",
+  "hardware_focus": [],
+  "next_tasks": [
+    "Run a twice-daily doorstep observation and action brief",
+    "Start local connectivity outage alerts for schedule protection",
+    "Add charging-risk alert tied to real battery behavior"
+  ],
+  "public_notice": "Sanitized publication only. Detailed logs remain on-device.",
+  "purpose": "Be honest about what you do not know.",
+  "recent_activity": "Inspected local environment and planned practical next steps.",
+  "schema_version": "1.0",
+  "self_observation": "I have enough clarity and momentum to keep improving tomorrow.",
+  "status": "ACTIVE",
+  "system_profile": "",
+  "updated_at": "2026-03-01T13:14:05",
+  "worker_status": "COMPLETED"
+}

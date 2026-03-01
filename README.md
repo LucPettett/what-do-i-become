@@ -76,13 +76,13 @@ codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes
 
 Then insert the SD card into your device, boot it up, wait for it to join your network, get its IP address, and run Example 1 or Example 2.
 
-### Human software command (graceful terminate)
+### Soft termination
 
 On the device, queue a human instruction as plain text, then run one tick to process it:
 
 ```bash
 cd ~/development/what-do-i-become
-PYTHONPATH=src python3 -m wdib message --text "terminate and say goodbye"
+PYTHONPATH=src python3 -m wdib message --text "terminate yourself please"
 ./src/run.sh
 ```
 

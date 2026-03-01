@@ -57,6 +57,7 @@ class PublicationTests(unittest.TestCase):
             payload["next_tasks"],
             ["Map beach litter hotspots", "Improve confidence scoring"],
         )
+        self.assertEqual(payload["completed_tasks"], ["Collect baseline observations"])
 
     def test_daily_summary_redacts_paths_and_skips_technical_reflection(self) -> None:
         now = datetime(2026, 3, 1, 9, 0, 0)

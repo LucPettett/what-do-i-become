@@ -64,6 +64,25 @@ def _next_task_titles(tasks: list[dict[str, Any]]) -> list[str]:
     return picked
 
 
+def _completed_task_titles(tasks: list[dict[str, Any]], *, run_date: str) -> list[str]:
+    done_today: list[str] = []
+    done_any: list[str] = []
+    for task in tasks:
+        if str(task.get("status") or "").upper() != "DONE":
+            continue
+        title = _sanitize(str(task.get("title") or ""), max_len=100)
+        if not title:
+            continue
+        updated_on = str(task.get("updated_on") or "")
+        if updated_on == run_date and title not in done_today:
+            done_today.append(title)
+        if title not in done_any:
+            done_any.append(title)
+    if done_today:
+        return done_today[:3]
+    return done_any[:3]
+
+
 def _hardware_focus(hardware_requests: list[dict[str, Any]]) -> list[str]:
     focus: list[str] = []
     for request in hardware_requests:
@@ -211,6 +230,7 @@ def build_public_status(
     now: datetime | None = None,
 ) -> dict[str, Any]:
     at = now or datetime.now()
+    run_date = at.date().isoformat()
     tasks = list(state.get("tasks") or [])
     hardware_requests = list(state.get("hardware_requests") or [])
     incidents = list(state.get("incidents") or [])
@@ -237,6 +257,7 @@ def build_public_status(
         "purpose": _extract_spirit_purpose(spirit_text) or "Unset (add a mission in SPIRIT.md).",
         "becoming": _sanitize(str((state.get("purpose") or {}).get("becoming") or "")),
         "recent_activity": _recent_activity(summary_hint, objective_hint),
+        "completed_tasks": _completed_task_titles(tasks, run_date=run_date),
         "next_tasks": next_tasks,
         "hardware_focus": hardware_focus,
         "self_observation": self_observation,

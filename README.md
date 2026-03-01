@@ -14,11 +14,9 @@ An autonomous hardware and software framework that extends itself, one hardware 
 
 **You are the agent. You install the hardware.**
 
-With a Spirit file, `what-do-i-become` becomes whatever you want it to become.
-
-Without a Spirit, `what-do-i-become` could become anything.
-
-As it evolves, WDIB will keep constructing its own software, becoming more autonomous while pursuing a single purpose.
+`spirit.md` sets long-term mission.
+Without a spirit file, WDIB self-discovers its direction from observed reality and daily work.
+Either way, each cycle updates its near-term becoming and continues building toward a concrete purpose.
 
 [How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](./SAFETY.md)
 
@@ -90,6 +88,22 @@ PYTHONPATH=src python3 -m wdib message --text "terminate and say goodbye"
 
 ---
 
+## Journal Output
+
+Slack updates are written as a daily journal with three sections:
+
+- **What I did** (concrete engineering actions from this cycle)
+- **What I'm thinking** (mission and self-reflection tied to becoming)
+- **What's next** (the next practical tasks)
+
+Message phases are distinct:
+
+- **Awakening**: first-run voice and first mission framing
+- **Update**: normal daily engineering journal
+- **Terminate**: reflective, graceful shutdown message
+
+The live dashboard still comes from `devices/*/public/status.json`, while Slack carries the more human daily narrative.
+
 ## Live Devices
 
 Devices running right now. Auto-generated from `devices/*/public/status.json`.
@@ -103,11 +117,9 @@ Devices running right now. Auto-generated from `devices/*/public/status.json`.
 
 ## Spirit on Hardware
 
-Every device has a **`SPIRIT.md`** — the founding instructions for behavior and direction. This file is human-authored, but is also not required (empty spirits are fine). Regardless, spirit or no spirit, the device will evolve into something.
-
-- **A `SPIRIT.md` may be given.**
-- **A long-term purpose comes from Spirit.**
-- **A near-term becoming is discovered and evolves over time.**
+Every device can have a **`spirit.md`**: a human-authored mission anchor.
+If it exists, WDIB uses it as the long-term north star.
+If it does not, WDIB still runs and discovers direction from observed context and outcomes.
 
 Every device will **self-orchestrate**: write code, run persistent processes, and manage its own services. In the beginning, the daily session is the primary window of agency but as time goes on, the device will become more and more autonomous.
 
@@ -115,13 +127,11 @@ This framework provides **a foundry for emergent behavior**.
 
 ## Spirit
 
-`SPIRIT.md` is the intent file for a device. It defines mission, priorities, tradeoffs, and non-negotiable boundaries.
+`spirit.md` is the intent file for a device. It defines mission and priorities in plain language.
 
-- Spirit is the long-term "why".
-- Becoming is the short-term "next direction".
-- Write Spirit in outcome language.
-- Keep Spirit stable across implementation changes.
-- If execution details change, update Skills instead of overloading Spirit.
+- Spirit is long-term purpose.
+- Becoming is short-term direction that changes as the device learns.
+- Keep spirit focused on outcomes, not implementation details.
 
 Optional Spirit files (shortcuts):
 - `src/SPIRIT.md.example` (generic template)
@@ -208,23 +218,23 @@ State continuity is tracked in:
 
 If it needs a physical component - a camera, a sensor, a memory upgrade, it requests one, then **waits for you, the human, to install it.
 
-Naturally, on the next awakening, it verifies the part works before moving on to implement it's next idea.
+Naturally, on the next awakening, it verifies the part works before moving on to implement its next idea.
 
 ### 🧪 How It Evolves
 
-**Example evolution** — a real expirement:
+**Example evolution** - a real experiment:
 
-- **Day 0:** `Inception` - The device immediately self discovers its capabilities and considers it's spirit and purpose.
+- **Day 0:** `Inception` - The device immediately self-discovers its capabilities and considers its spirit and purpose.
 - **Day 1:** `Request camera module` — the device decides it wants visual input.
 - **Day 2:** `Awaiting camera module` — the device waits for you to install it.
 - **Day 4:** You install it. The device verifies it works and installs the necessary drivers. The device constructs software to use the camera.
 - **Day 5:** The device runs the camera software and logs the results, observing a garden view.
-- **Day 6:** The device considers the data and decides it needs to understand it's weather. 
+- **Day 6:** The device considers the data and decides it needs to understand local weather.
 - **Day 7:** `Request temperature sensor` — the device decides it needs to measure temperature.
 
 Each software layer builds on verified hardware. Each new capability unlocks further possibilities. Over time, this leads to **tangible, self-constructed systems**: devices that have requested parts, integrated them, written software to use them, and built themselves into something specific.
 
-As time goes on the agent becomes more and more autonomous, identifing and pursuing it's own goals, **pursuing a purpose**.
+As time goes on the agent becomes more and more autonomous, identifying and pursuing its own goals, **pursuing a purpose**.
 
 ## Getting Started
 

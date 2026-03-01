@@ -46,13 +46,6 @@ def _human_date(run_date: str) -> str:
     return f"{parsed.strftime('%A')} {_ordinal(parsed.day)} {parsed.strftime('%B')}"
 
 
-def _message_style() -> str:
-    raw = str(os.environ.get("WDIB_SLACK_MESSAGE_STYLE") or "human").strip().lower()
-    if raw == "detailed":
-        return "detailed"
-    return "human"
-
-
 def _legacy_icon_emoji() -> str:
     return str(os.environ.get("WDIB_SLACK_ICON_EMOJI") or "").strip()
 
@@ -261,40 +254,135 @@ def _build_cycle_text_human(status_payload: dict[str, Any], git_info: dict[str, 
     return _build_update_text(status_payload, git_info, run_date)
 
 
-def _build_cycle_text_detailed(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
-    short_id = str(status_payload.get("device_id_short") or "-")
-    day = int(status_payload.get("day") or 0)
-    status = str(status_payload.get("status") or "UNKNOWN")
-    worker_status = str(status_payload.get("worker_status") or "UNKNOWN")
-    cycle_id = str(status_payload.get("cycle_id") or "-")
-    purpose = str(status_payload.get("purpose") or "").strip()
-    becoming = str(status_payload.get("becoming") or "").strip()
-    pushed = bool(git_info.get("pushed"))
-    git_mark = "yes" if pushed else "no"
+def _slack_llm_model() -> str:
+    configured = str(os.environ.get("WDIB_LLM_MODEL") or "").strip()
+    if configured:
+        return configured
+    return "gpt-5.2"
 
-    lines = [
-        f"*WDIB Daily Summary* ({run_date})",
-        f"- Device: `{short_id}`",
-        f"- Day: `{day:03d}`",
-        f"- Status: `{status}` | Worker: `{worker_status}`",
-        f"- Cycle: `{cycle_id}`",
-    ]
-    if purpose:
-        lines.append(f"- Purpose: {purpose}")
-    if becoming:
-        lines.append(f"- Becoming: {becoming}")
-    lines.extend(
-        [
-            f"- Pushed to GitHub: `{git_mark}`",
-            "- This update is sanitized; detailed logs remain on-device.",
-        ]
+
+def _extract_json_object(raw_text: str) -> dict[str, Any] | None:
+    value = str(raw_text or "").strip()
+    if not value:
+        return None
+    try:
+        parsed = json.loads(value)
+        if isinstance(parsed, dict):
+            return parsed
+        return None
+    except json.JSONDecodeError:
+        start = value.find("{")
+        end = value.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            return None
+        try:
+            parsed = json.loads(value[start : end + 1])
+        except json.JSONDecodeError:
+            return None
+        if isinstance(parsed, dict):
+            return parsed
+        return None
+
+
+def _llm_prompt_context(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> dict[str, Any]:
+    counts = status_payload.get("counts") or {}
+    return {
+        "message_type": _pick_message_type(status_payload),
+        "run_date": _human_date(run_date),
+        "cycle_id": str(status_payload.get("cycle_id") or "-"),
+        "day": int(status_payload.get("day") or 0),
+        "status": str(status_payload.get("status") or "UNKNOWN"),
+        "worker_status": str(status_payload.get("worker_status") or "UNKNOWN"),
+        "purpose": str(status_payload.get("purpose") or "").strip(),
+        "becoming": str(status_payload.get("becoming") or "").strip(),
+        "recent_activity": str(status_payload.get("recent_activity") or "").strip(),
+        "system_profile": str(status_payload.get("system_profile") or "").strip(),
+        "self_observation": str(status_payload.get("self_observation") or "").strip(),
+        "completed_tasks": [str(item).strip() for item in list(status_payload.get("completed_tasks") or [])][:3],
+        "next_tasks": [str(item).strip() for item in list(status_payload.get("next_tasks") or [])][:3],
+        "hardware_focus": [str(item).strip() for item in list(status_payload.get("hardware_focus") or [])][:3],
+        "engineering_details": _engineering_detail_lines(status_payload),
+        "counts": {
+            "tasks": dict(counts.get("tasks") or {}),
+            "hardware_requests": dict(counts.get("hardware_requests") or {}),
+            "incidents_open": int(counts.get("incidents_open") or 0),
+        },
+        "git_pushed": bool(git_info.get("pushed")),
+    }
+
+
+def _build_cycle_text_llm(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str | None:
+    if not os.environ.get("OPENAI_API_KEY"):
+        return None
+    try:
+        from openai import OpenAI
+    except Exception:  # noqa: BLE001
+        return None
+
+    system_prompt = (
+        "You write WDIB Slack updates for one cycle.\n"
+        "Rules:\n"
+        "1) Use only facts from the provided JSON context.\n"
+        "2) Keep first-person voice ('I'). Be concrete, not generic.\n"
+        "3) Start with two lines exactly in this shape: 'Device: ...' and 'Purpose: ...'.\n"
+        "4) Keep it short: 80-220 words.\n"
+        "5) Use Slack-friendly Markdown and bullets where helpful.\n"
+        "6) Never mention internal filenames, schema names, secrets, IPs, tokens, or local paths.\n"
+        "7) If message_type is 'terminate', write a graceful closing note.\n"
+        "Return strict JSON with one key: text."
     )
-    return "\n".join(lines)
+    context = _llm_prompt_context(status_payload, git_info, run_date)
+    user_prompt = (
+        "Compose a polished WDIB cycle update.\n"
+        "Context JSON:\n"
+        f"{json.dumps(context, indent=2, sort_keys=True)}"
+    )
+    response_schema = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["text"],
+        "properties": {
+            "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1800,
+            }
+        },
+    }
+
+    client = OpenAI()
+    try:
+        response = client.responses.create(
+            model=_slack_llm_model(),
+            input=[
+                {"role": "system", "content": [{"type": "input_text", "text": system_prompt}]},
+                {"role": "user", "content": [{"type": "input_text", "text": user_prompt}]},
+            ],
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": "wdib_slack_cycle_message",
+                    "schema": response_schema,
+                    "strict": True,
+                }
+            },
+        )
+    except Exception:  # noqa: BLE001
+        return None
+
+    parsed = _extract_json_object(getattr(response, "output_text", ""))
+    if not parsed:
+        return None
+    text = str(parsed.get("text") or "").strip()
+    if not text:
+        return None
+    return text
 
 
 def _build_cycle_text(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
-    if _message_style() == "detailed":
-        return _build_cycle_text_detailed(status_payload, git_info, run_date)
+    llm_text = _build_cycle_text_llm(status_payload, git_info, run_date)
+    if llm_text:
+        return llm_text
     return _build_cycle_text_human(status_payload, git_info, run_date)
 
 

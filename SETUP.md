@@ -90,6 +90,18 @@ WDIB_SLACK_AWAKENING_EMOJI=:sunrise:
 WDIB_SLACK_UPDATE_EMOJI=☕️
 ```
 
+Slack wording is model-generated with strict JSON output and falls back to built-in templates if inference fails.
+
+### Optional: Enable worker web search
+
+If your mission needs external, current references (for example, vendor docs or live incidents), allow Codex web search:
+
+```bash
+WDIB_CODEX_ENABLE_WEB_SEARCH=true
+```
+
+Default is off. When disabled, the worker stays local-only and should block if external facts are required.
+
 Notifications are routed through a modular channel router (`src/wdib/notifications/`), so more channels can be added later without changing the core tick flow.
 
 ### Important Deploy-Key Step

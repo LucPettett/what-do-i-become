@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
         "--model",
         default=os.environ.get("WDIB_INFERENCE_MODEL")
         or os.environ.get("WDIB_LLM_MODEL")
-        or "gpt-5",
+        or "gpt-5.2",
         help="OpenAI model for inference",
     )
     parser.add_argument(

@@ -269,6 +269,15 @@ cp src/.env.example src/.env
 nano src/.env
 ```
 
+Optional: allow the WDIB worker to use live web search during `codex exec` when objectives require external or time-sensitive facts.
+
+```bash
+# In src/.env
+WDIB_CODEX_ENABLE_WEB_SEARCH=true
+```
+
+Default is `false`. Keep it off unless the mission frequently depends on external references that are not in local repo state.
+
 Optional notifications (modular):
 
 ```bash
@@ -278,11 +287,17 @@ WDIB_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 WDIB_SLACK_USERNAME=wdib
 WDIB_SLACK_AWAKENING_EMOJI=:sunrise:
 WDIB_SLACK_UPDATE_EMOJI=☕️
-WDIB_SLACK_MESSAGE_STYLE=human
 ```
+
+Slack wording is model-generated with strict JSON output and automatic template fallback if inference fails.
 
 WDIB routes notifications through a channel router (`src/wdib/notifications/`).
 Today: `slack`. Future channels can be added as provider modules without changing tick logic.
+
+Self-knowledge framing in updates is intentionally explicit. Example:
+
+- `Device:` I am a Raspberry Pi with wlan0 online and I2C buses available.
+- `Purpose:` I am becoming a daily dashboard for a human.
 
 Run once manually:
 

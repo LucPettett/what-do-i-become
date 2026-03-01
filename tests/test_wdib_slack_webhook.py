@@ -12,12 +12,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from wdib.adapters import slack_webhook  # noqa: E402
 from wdib.adapters.slack_webhook import _build_cycle_text, _cycle_icon_emoji  # noqa: E402
 
 
 class SlackWebhookFormattingTests(unittest.TestCase):
-    def test_human_update_message_is_default(self) -> None:
-        status_payload = {
+    def _status_payload(self) -> dict[str, object]:
+        return {
             "device_id_short": "abcd1234",
             "day": 2,
             "status": "ACTIVE",
@@ -41,8 +42,12 @@ class SlackWebhookFormattingTests(unittest.TestCase):
                 "incidents_open": 0,
             },
         }
-        with mock.patch.dict(os.environ, {}, clear=False):
-            text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
+
+    def test_human_update_message_is_default(self) -> None:
+        status_payload = self._status_payload()
+        with mock.patch.object(slack_webhook, "_build_cycle_text_llm", return_value=None):
+            with mock.patch.dict(os.environ, {}, clear=False):
+                text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
 
         self.assertIn("journal, cycle", text)
         self.assertIn(":coffee:", text)
@@ -59,6 +64,24 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertNotIn("Status:", text)
         self.assertNotIn("Privacy:", text)
         self.assertIn("•", text)
+
+    def test_llm_path_prefers_model_text(self) -> None:
+        status_payload = self._status_payload()
+        with mock.patch.object(
+            slack_webhook,
+            "_build_cycle_text_llm",
+            return_value="*LLM update*\n\nI improved signal quality today.",
+        ):
+            text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
+        self.assertIn("LLM update", text)
+        self.assertNotIn("journal, cycle", text)
+
+    def test_llm_falls_back_to_human_when_unavailable(self) -> None:
+        status_payload = self._status_payload()
+        with mock.patch.object(slack_webhook, "_build_cycle_text_llm", return_value=None):
+            text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
+        self.assertIn("journal, cycle", text)
+        self.assertIn(":coffee:", text)
 
     def test_human_awakening_message_has_awoke_header(self) -> None:
         status_payload = {
@@ -79,8 +102,9 @@ class SlackWebhookFormattingTests(unittest.TestCase):
                 "incidents_open": 0,
             },
         }
-        with mock.patch.dict(os.environ, {}, clear=False):
-            text = _build_cycle_text(status_payload, {"pushed": False}, "2026-03-01")
+        with mock.patch.object(slack_webhook, "_build_cycle_text_llm", return_value=None):
+            with mock.patch.dict(os.environ, {}, clear=False):
+                text = _build_cycle_text(status_payload, {"pushed": False}, "2026-03-01")
 
         self.assertIn("I awoke and", text)
         self.assertIn(":sunrise:", text)
@@ -115,8 +139,9 @@ class SlackWebhookFormattingTests(unittest.TestCase):
                 "incidents_open": 0,
             },
         }
-        with mock.patch.dict(os.environ, {}, clear=False):
-            text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
+        with mock.patch.object(slack_webhook, "_build_cycle_text_llm", return_value=None):
+            with mock.patch.dict(os.environ, {}, clear=False):
+                text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
 
         self.assertIn("Closing journal - ✌️", text)
         self.assertIn("I've been told to terminate", text)
@@ -125,23 +150,6 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertIn("Engineering highlights:", text)
         self.assertIn("I'm terminating now. Goodbye.", text)
         self.assertNotIn("•", text)
-
-    def test_detailed_style_keeps_structured_fields(self) -> None:
-        status_payload = {
-            "device_id_short": "abcd1234",
-            "day": 2,
-            "status": "ACTIVE",
-            "worker_status": "COMPLETED",
-            "cycle_id": "cycle-002-20260301T112400",
-            "purpose": "Help clean local beaches by reducing litter hotspots.",
-            "becoming": "Improve hotspot detection and daily clean-up guidance.",
-        }
-        with mock.patch.dict(os.environ, {"WDIB_SLACK_MESSAGE_STYLE": "detailed"}, clear=False):
-            text = _build_cycle_text(status_payload, {"pushed": False}, "2026-03-01")
-
-        self.assertIn("WDIB Daily Summary", text)
-        self.assertIn("Cycle:", text)
-        self.assertIn("Status:", text)
 
     def test_icon_emoji_defaults_by_cycle_phase(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=False):

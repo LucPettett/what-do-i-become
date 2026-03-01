@@ -232,7 +232,7 @@ if [ ! -f src/.env ]; then
 fi
 
 set_env_value WDIB_LLM_PROVIDER openai src/.env
-set_env_value WDIB_LLM_MODEL gpt-5 src/.env
+set_env_value WDIB_LLM_MODEL gpt-5.2 src/.env
 if [ -n "$OPENAI_API_KEY" ]; then
   set_env_value OPENAI_API_KEY "$OPENAI_API_KEY" src/.env
 fi

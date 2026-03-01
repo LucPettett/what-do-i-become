@@ -113,11 +113,33 @@ def _normalize_worker_result(payload: Any, work_order: dict[str, Any]) -> Any:
     return normalized
 
 
-def _prompt_from_work_order(work_order: dict[str, Any]) -> str:
+def _prompt_from_work_order(
+    work_order: dict[str, Any],
+    *,
+    web_search_enabled: bool = False,
+) -> str:
+    web_search_policy = (
+        "Web search is enabled for this run.\n"
+        "Use web search only when the objective requires external, time-sensitive, or missing documentation facts that are not in local files.\n"
+        "Do not browse for generic coding advice when repository evidence is sufficient.\n"
+        "If you use web search, keep it minimal and include source URLs in worker_result.summary as verification evidence.\n"
+    )
+    if not web_search_enabled:
+        web_search_policy = (
+            "Web search is disabled for this run.\n"
+            "Rely on local code, tests, docs, and commands only.\n"
+            "If an external fact is strictly required, set worker_result.status=BLOCKED and explain the exact missing fact in worker_result.summary.\n"
+        )
+
     return (
         "You are the WDIB worker plane.\n"
         "Execute the objective from the provided work order.\n"
         "You may inspect and modify code only inside allowed_paths.\n"
+        "Apply this decision gate before taking action:\n"
+        "1) Decide whether this objective can be completed from local repository context alone.\n"
+        "2) Use external research only if it materially changes correctness or safety.\n"
+        "3) Prefer silence on web usage when local evidence is enough.\n"
+        f"{web_search_policy}"
         "Use WDIB engineering discipline by default:\n"
         "1) For bugs/failures, find root cause before proposing fixes.\n"
         "2) For behavior/code changes, write or update tests first, then implement minimal code.\n"
@@ -130,6 +152,34 @@ def _prompt_from_work_order(work_order: dict[str, Any]) -> str:
         "WORK_ORDER_JSON:\n"
         f"{json.dumps(work_order, indent=2, sort_keys=True)}\n"
     )
+
+
+def _build_codex_exec_command(
+    *,
+    codex_bin: str,
+    sandbox_mode: str,
+    result_path: Path,
+    project_root: Path,
+    codex_model: str,
+    prompt: str,
+    web_search_enabled: bool,
+) -> list[str]:
+    command = [
+        codex_bin,
+        "exec",
+        "--sandbox",
+        sandbox_mode,
+        "--output-last-message",
+        str(result_path),
+        "--cd",
+        str(project_root),
+    ]
+    if web_search_enabled:
+        command.append("--search")
+    if codex_model:
+        command.extend(["--model", codex_model])
+    command.append(prompt)
+    return command
 
 
 def _write_skip_result(work_order: dict[str, Any]) -> dict[str, Any]:
@@ -161,25 +211,22 @@ def execute_work_order(
     if not codex_bin:
         raise CodexRunFailure("codex binary was not found in PATH")
 
-    prompt = _prompt_from_work_order(work_order)
+    web_search_enabled = env_bool("WDIB_CODEX_ENABLE_WEB_SEARCH", default=False)
+    prompt = _prompt_from_work_order(work_order, web_search_enabled=web_search_enabled)
     result_path = Path(work_order["result_path"])
     sandbox_mode = (os.getenv("WDIB_CODEX_SANDBOX") or "workspace-write").strip()
     if sandbox_mode not in {"read-only", "workspace-write", "danger-full-access"}:
         sandbox_mode = "workspace-write"
-    command = [
-        codex_bin,
-        "exec",
-        "--sandbox",
-        sandbox_mode,
-        "--output-last-message",
-        str(result_path),
-        "--cd",
-        str(project_root),
-    ]
     codex_model = (os.getenv("WDIB_CODEX_MODEL") or "").strip()
-    if codex_model:
-        command.extend(["--model", codex_model])
-    command.append(prompt)
+    command = _build_codex_exec_command(
+        codex_bin=codex_bin,
+        sandbox_mode=sandbox_mode,
+        result_path=result_path,
+        project_root=project_root,
+        codex_model=codex_model,
+        prompt=prompt,
+        web_search_enabled=web_search_enabled,
+    )
 
     run_env = os.environ.copy()
     # Official Codex exec guidance favors CODEX_API_KEY in non-interactive runs.
@@ -199,6 +246,7 @@ def execute_work_order(
         "returncode": completed.returncode,
         "stdout": (completed.stdout or "")[-4000:],
         "stderr": (completed.stderr or "")[-4000:],
+        "web_search": web_search_enabled,
     }
 
     if completed.returncode != 0:

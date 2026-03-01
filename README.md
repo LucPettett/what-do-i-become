@@ -97,7 +97,7 @@ Auto-generated from `devices/*/public/status.json`
 
 | Device | Day | Details |
 |--------|-----|---------|
-| `e04d6545` | 1 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Deliver a daily briefing that helps a nearby human make better decisions using verified local conditions and global con...<br>**Last Activity:** Inspected local environment and planned practical next steps. |
+| - | 0 | - |
 
 ---
 
@@ -107,6 +107,7 @@ Auto-generated from `devices/*/public/status.json`
 |--------|-----|---------|
 | `58f88ed7` | 4 | **Purpose:** Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progres...<br>**Becoming:** Gracefully conclude this mission run and hand over cleanly.<br>**Ended:** 2026-03-01 |
 | `4250ef9f` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Gracefully conclude this mission run and hand over cleanly.<br>**Ended:** 2026-03-01 |
+| `e04d6545` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Gracefully conclude this mission run and hand over cleanly.<br>**Ended:** 2026-03-01 |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Daily Journal

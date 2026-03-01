@@ -53,8 +53,7 @@ Devices running right now. Auto-generated from `devices/*/public/status.json`.
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Becoming | Status |
 | --- | --- | ---: | --- | --- |
-| `cdb4da79` | 2026-02-28 | 2 | - | ACTIVE |
-| `58f88ed7` | 2026-03-01 | 1 | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progress. | ACTIVE |
+| - | - | 0 | - | - |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Hardware with a spirit

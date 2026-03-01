@@ -53,6 +53,40 @@ def _message_style() -> str:
     return "human"
 
 
+def _legacy_icon_emoji() -> str:
+    return str(os.environ.get("WDIB_SLACK_ICON_EMOJI") or "").strip()
+
+
+def _awakening_icon_emoji() -> str:
+    specific = str(os.environ.get("WDIB_SLACK_AWAKENING_EMOJI") or "").strip()
+    if specific:
+        return specific
+    legacy = _legacy_icon_emoji()
+    if legacy:
+        return legacy
+    return ":sunrise:"
+
+
+def _update_icon_emoji() -> str:
+    specific = str(os.environ.get("WDIB_SLACK_UPDATE_EMOJI") or "").strip()
+    if specific:
+        return specific
+    legacy = _legacy_icon_emoji()
+    if legacy:
+        return legacy
+    return "☕️"
+
+
+def _cycle_icon_emoji(status_payload: dict[str, Any]) -> str:
+    try:
+        day = int(status_payload.get("day") or 0)
+    except (TypeError, ValueError):
+        day = 0
+    if day <= 1:
+        return _awakening_icon_emoji()
+    return _update_icon_emoji()
+
+
 def _build_cycle_text_human(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
     purpose = str(status_payload.get("purpose") or "").strip()
     becoming = str(status_payload.get("becoming") or "").strip()
@@ -159,14 +193,14 @@ def _build_failure_text(device_id: str, cycle_id: str, day: int, ts: datetime) -
     )
 
 
-def _post_text(text: str) -> dict[str, Any]:
+def _post_text(text: str, *, icon_emoji_override: str = "") -> dict[str, Any]:
     url = _webhook_url()
     if not url:
         return {"sent": False, "reason": "WDIB_SLACK_WEBHOOK_URL is not configured"}
 
     payload: dict[str, Any] = {"text": text}
     username = str(os.environ.get("WDIB_SLACK_USERNAME") or "").strip()
-    icon_emoji = str(os.environ.get("WDIB_SLACK_ICON_EMOJI") or "").strip()
+    icon_emoji = str(icon_emoji_override or _legacy_icon_emoji()).strip()
     if username:
         payload["username"] = username
     if icon_emoji:
@@ -205,9 +239,9 @@ def _post_text(text: str) -> dict[str, Any]:
 
 def notify_cycle_summary(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> dict[str, Any]:
     text = _build_cycle_text(status_payload, git_info, run_date)
-    return _post_text(text)
+    return _post_text(text, icon_emoji_override=_cycle_icon_emoji(status_payload))
 
 
 def notify_cycle_failure(device_id: str, cycle_id: str, day: int, ts: datetime) -> dict[str, Any]:
     text = _build_failure_text(device_id, cycle_id, day, ts)
-    return _post_text(text)
+    return _post_text(text, icon_emoji_override=_update_icon_emoji())

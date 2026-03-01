@@ -86,7 +86,8 @@ On the device (`src/.env`):
 WDIB_NOTIFICATION_CHANNELS=slack
 WDIB_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 WDIB_SLACK_USERNAME=wdib
-WDIB_SLACK_ICON_EMOJI=:sunrise:
+WDIB_SLACK_AWAKENING_EMOJI=:sunrise:
+WDIB_SLACK_UPDATE_EMOJI=☕️
 ```
 
 Notifications are routed through a modular channel router (`src/wdib/notifications/`), so more channels can be added later without changing the core tick flow.

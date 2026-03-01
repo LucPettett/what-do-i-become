@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from wdib.adapters.slack_webhook import _build_cycle_text  # noqa: E402
+from wdib.adapters.slack_webhook import _build_cycle_text, _cycle_icon_emoji  # noqa: E402
 
 
 class SlackWebhookFormattingTests(unittest.TestCase):
@@ -64,6 +64,23 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertIn("WDIB Daily Summary", text)
         self.assertIn("Cycle:", text)
         self.assertIn("Status:", text)
+
+    def test_icon_emoji_defaults_by_cycle_phase(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=False):
+            self.assertEqual(_cycle_icon_emoji({"day": 1}), ":sunrise:")
+            self.assertEqual(_cycle_icon_emoji({"day": 2}), "☕️")
+
+    def test_icon_emoji_can_be_overridden_by_env(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                "WDIB_SLACK_AWAKENING_EMOJI": ":sunrise:",
+                "WDIB_SLACK_UPDATE_EMOJI": ":coffee:",
+            },
+            clear=False,
+        ):
+            self.assertEqual(_cycle_icon_emoji({"day": 1}), ":sunrise:")
+            self.assertEqual(_cycle_icon_emoji({"day": 3}), ":coffee:")
 
 
 if __name__ == "__main__":

@@ -247,7 +247,8 @@ Optional notifications (modular):
 WDIB_NOTIFICATION_CHANNELS=slack
 WDIB_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 WDIB_SLACK_USERNAME=wdib
-WDIB_SLACK_ICON_EMOJI=:sunrise:
+WDIB_SLACK_AWAKENING_EMOJI=:sunrise:
+WDIB_SLACK_UPDATE_EMOJI=☕️
 WDIB_SLACK_MESSAGE_STYLE=human
 ```
 

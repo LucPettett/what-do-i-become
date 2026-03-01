@@ -1,5 +1,5 @@
 {
-  "becoming": "Help the nearby human leave home safer and with fewer avoidable disruptions by turning local observations into immediate action.",
+  "becoming": "Help the nearby human leave home with fewer avoidable disruptions by turning local power risk into immediate actions before departure.",
   "completed_tasks": [],
   "counts": {
     "hardware_requests": {
@@ -16,32 +16,32 @@
       "todo": 3
     }
   },
-  "cycle_id": "cycle-004-20260301T150136",
+  "cycle_id": "cycle-001-20260301T150918",
   "date": "2026-03-01",
-  "day": 4,
+  "day": 1,
   "device_id_short": "e60d3087",
   "engineering_details": [
-    "`date '+%Y-%m-%dT%H:%M:%S%z %A'` -> 2026-03-01T15:03:56+1000 Sunday",
+    "`date '+%Y-%m-%dT%H:%M:%S%z %A'` -> 2026-03-01T15:12:20+1000 Sunday",
     "`readlink [redacted-path]` -> [redacted-path]",
+    "`PYTHONPATH=src python3 -m unittest tests/test_wdib_power_readiness.py tests/tes...` -> Ran 16 tests ... OK",
     "`imagesnap -l` -> No video devices found.",
-    "`PYTHONPATH=src python3 -m unittest tests/test_wdib_doorstep_scan.py tests/test_...` -> Ran 11 tests ... OK",
-    "`PYTHONPATH=src python3 -m wdib.control.doorstep_scan --log-path devices/[redact...` -> remaining_slots_today=[\"morning\",\"evening\"]",
-    "Artifact: Doorstep scan cadence-status API and CLI status-only mode for due/overdue/next-slot visibility."
+    "Artifact: Runbook for cadence, command usage, decision rules, and log contract for pre-departure power checks.",
+    "Artifact: Today's machine-observed pre-departure power readiness record with high-risk classification and action tips."
   ],
   "first_awoke_on": "2026-03-01",
   "hardware_focus": [],
   "next_tasks": [
-    "Run a twice-daily doorstep hazard scan with action tips",
     "Launch a pre-departure power readiness check",
+    "Run a twice-daily doorstep hazard scan with action tips",
     "Add local connectivity reliability checks with fallback guidance"
   ],
   "public_notice": "Sanitized publication only. Detailed logs remain on-device.",
   "purpose": "You exist to run a physical dashboard, in order to improve the life of a human.",
-  "recent_activity": "Advanced task task-20260301-001 by adding cadence-state reporting for the doorstep scan workflow, so twice-daily execution now exposes due-now/overdue/next-slo...",
+  "recent_activity": "Translated mission intent into a concrete capability roadmap and selected the highest-leverage next step.",
   "schema_version": "1.0",
   "self_observation": "I have enough clarity and momentum to keep improving tomorrow.",
   "status": "ACTIVE",
   "system_profile": "",
-  "updated_at": "2026-03-01T15:01:36",
+  "updated_at": "2026-03-01T15:09:18",
   "worker_status": "COMPLETED"
 }

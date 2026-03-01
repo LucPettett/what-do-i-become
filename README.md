@@ -84,7 +84,7 @@ Devices running right now. Auto-generated from `devices/*/public/status.json`.
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Purpose | Becoming | Recent Activity | Status |
 | --- | --- | ---: | --- | --- | --- | --- |
-| `58f88ed7` | 2026-03-01 | 2 | - | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progress. | - | ACTIVE |
+| `58f88ed7` | 2026-03-01 | 1 | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progres... | Help nearby people stay safer and better informed each day through local, observable conditions and actionable alerts. | Completed a technical maintenance cycle. | ACTIVE |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Hardware with a spirit

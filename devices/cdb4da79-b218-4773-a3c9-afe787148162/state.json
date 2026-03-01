@@ -1,11 +1,66 @@
 {
   "artifacts": [],
   "awoke_on": "2026-02-28",
-  "day": 0,
+  "day": 1,
   "device_id": "cdb4da79-b218-4773-a3c9-afe787148162",
   "hardware_requests": [],
-  "incidents": [],
-  "last_summary": "",
+  "incidents": [
+    {
+      "created_on": "2026-03-01",
+      "id": "incident-20260301-001",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "summary": "codex binary was not found in PATH",
+      "title": "WDIB runtime failure",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "created_on": "2026-03-01",
+      "id": "incident-20260301-002",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "summary": "codex exec failed (2): error: unexpected argument '--ask-for-approval' found\n\n  tip: to pass '--ask-for-approval' as a value, use '-- --ask-for-approval'\n\nUsage: codex exec --sandbox <SANDBOX_MODE> [PROMPT]\n\nFor more information, try '--help'.",
+      "title": "WDIB runtime failure",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "created_on": "2026-03-01",
+      "id": "incident-20260301-003",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "summary": "codex exec failed (1): OpenAI Codex v0.106.0 (research preview)\n--------\nworkdir: /home/pi/development/what-do-i-become\nmodel: gpt-5.3-codex\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 019ca6c0-fa70-7b43-a60b-48ef9ee9a3f8\n-",
+      "title": "WDIB runtime failure",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "created_on": "2026-03-01",
+      "id": "incident-20260301-004",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "summary": "worker result file not found: /home/pi/development/what-do-i-become/devices/cdb4da79-b218-4773-a3c9-afe787148162/runtime/worker_results/cycle-001-20260301T001919.json",
+      "title": "WDIB runtime failure",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "created_on": "2026-03-01",
+      "id": "incident-20260301-005",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "summary": "codex exec failed (1): OpenAI Codex v0.106.0 (research preview)\n--------\nworkdir: /home/pi/development/what-do-i-become\nmodel: gpt-5.3-codex\nprovider: openai\napproval: never\nsandbox: workspace-write [workdir, /tmp, $TMPDIR]\nreasoning effort: none\nreasoning summaries: none\nsession id: 019ca6c5-1dd3-75e0-8aaa-6cc812c69b63\n-",
+      "title": "WDIB runtime failure",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "created_on": "2026-03-01",
+      "id": "incident-20260301-006",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "summary": "Invalid worker_result: <root>: Additional properties are not allowed ('device_id', 'tasks' were unexpected); incidents.0: Additional properties are not allowed ('id' was unexpected); incidents.0: 'title' is a required property; incidents.0: 'summary' is a required property; incidents.0: 'severity' is a required property; incidents.1: Additional properties are not allowed ('id' was unexpected); incidents.1: 'title' is a required property; incidents.1: 'summary' is a required property; incidents.1: 'severity' is a required property; incidents.2: Additional properties are not allowed ('id' was unexpected)",
+      "title": "WDIB runtime failure",
+      "updated_on": "2026-03-01"
+    }
+  ],
+  "last_summary": "Execution environment failure prevented all work beyond initial probing. Verification evidence: `pwd && ls -la && rg --files` -> exit 101 with `error applying legacy Linux sandbox restrictions: Sandbox(LandlockRestrict)`; `ls` -> exit 101 with same error; `pwd` (login=false) -> exit 101 with same error. Because shell execution was unavailable, root-cause analysis of WDIB runtime failures, test-first code changes, and in-repo verification could not be performed, and result persistence to result_path could not be machine-verified.",
   "purpose": {
     "becoming": "",
     "spirit_path": "/home/pi/development/what-do-i-become/src/SPIRIT.md"

@@ -52,11 +52,6 @@ cat > ./spirit.md <<'SPIRIT'
 ## Mission
 You are determined to help clean up the beach of small-scale human rubbish.
 Your role is to become excellent at spotting, tracking, and reducing litter in the local beach environment.
-
-## Rules
-- Prioritize high-impact clean-up opportunities.
-- Keep public summaries high-level.
-- Keep detailed diagnostics local on the device.
 SPIRIT
 
 codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./spirit.md, run one tick, and report blockers only. Never echo full secrets."

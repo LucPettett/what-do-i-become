@@ -97,7 +97,6 @@ Auto-generated from `devices/*/public/status.json`
 
 | Device | Day | Details |
 |--------|-----|---------|
-| `dd65b183` | 1 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Deliver a daily local-first briefing that helps a nearby human make better decisions using verified on-device observati...<br>**Latest Activity:** Local physical/environment inspection completed with machine-observed evidence. |
 | `e60d3087` | 1 | **Purpose:** You exist to run a physical dashboard, in order to improve the life of a human.<br>**Becoming:** Help the nearby human leave home with fewer avoidable disruptions by turning local power risk into immediate actions be...<br>**Latest Activity:** Translated mission intent into a concrete capability roadmap and selected the highest-leverage next step. |
 | `fc2765f6` | 1 | **Purpose:** Be honest about what you do not know.<br>**Becoming:** Deliver a twice-daily local readiness brief that helps a nearby human make safer, faster day-to-day decisions from obse...<br>**Latest Activity:** Inspected local environment and planned practical next steps. |
 
@@ -111,6 +110,7 @@ Auto-generated from `devices/*/public/status.json`
 | `4250ef9f` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Latest Activity:** Received human termination instruction and gracefully ended this run. Goodbye for now. |
 | `e04d6545` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Latest Activity:** Received human termination instruction and gracefully ended this run. Goodbye for now. |
 | `d3324683` | 1 | **Purpose:** Be honest about what you do not know.<br>**Latest Activity:** Received human termination instruction and gracefully ended this run. Goodbye for now. |
+| `dd65b183` | 1 | **Purpose:** You exist to run a physical dashboard, in order to improve the life of a human.<br>**Latest Activity:** Received human termination instruction and gracefully ended this run. Goodbye for now. |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Daily Journal

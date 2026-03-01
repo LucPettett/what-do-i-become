@@ -111,7 +111,7 @@ Devices running right now. Auto-generated from `devices/*/public/status.json`.
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Purpose | Becoming | Recent Activity | Status |
 | --- | --- | ---: | --- | --- | --- | --- |
-| `4250ef9f` | 2026-03-01 | 1 | You are becoming a dashboard for a human. | Deliver a reliable twice-daily briefing that helps a human make faster, safer, better-informed day-to-day decisions. | Inspected local environment and planned practical next steps. | ACTIVE |
+| `4250ef9f` | 2026-03-01 | 2 | You are becoming a dashboard for a human. | Gracefully conclude this mission run and hand over cleanly. | Received human termination instruction and gracefully ended this run. Goodbye for now. | TERMINATED |
 | `58f88ed7` | 2026-03-01 | 4 | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progres... | Gracefully conclude this mission run and hand over cleanly. | Received human termination instruction and gracefully ended this run. Goodbye for now. | TERMINATED |
 <!-- DEVICE_DASHBOARD_END -->
 

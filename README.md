@@ -26,11 +26,9 @@ As it evolves, WDIB will keep constructing its own software, becoming more auton
 
 Use placeholders and keep real secrets out of git.
 
-### Hardware without a spirit (self-discovery)
+### Example 1: Running hardware without a spirit (self-discovery)
 
 ```bash
-export WIFI_SSID="<wifi_ssid>"
-export WIFI_PASSWORD="<wifi_password>"
 export DEVICE_IP="<device_ip>"
 export OPENAI_API_KEY="<openai_api_key>"
 export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
@@ -38,16 +36,12 @@ export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
 git clone https://github.com/<you>/what-do-i-become.git
 cd what-do-i-become
 
-codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes/bootfs. Environment context: Wi-Fi SSID is ${WIFI_SSID}, Wi-Fi password is ${WIFI_PASSWORD}. Enable SSH, configure Wi-Fi, and print a readiness checklist only. Do not print secrets."
-
 codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}', run one tick, and report blockers only. Never echo full secrets."
 ```
 
-### Hardware with a spirit
+### Example 2: Running hardware with a spirit (beach clean-up default)
 
 ```bash
-export WIFI_SSID="<wifi_ssid>"
-export WIFI_PASSWORD="<wifi_password>"
 export DEVICE_IP="<device_ip>"
 export OPENAI_API_KEY="<openai_api_key>"
 export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
@@ -62,7 +56,6 @@ Your role is to become excellent at spotting, tracking, and reducing litter in t
 - Keep public summaries high-level.
 - Keep detailed diagnostics local on the device.
 SPIRIT
-codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes/bootfs. Environment context: Wi-Fi SSID is ${WIFI_SSID}, Wi-Fi password is ${WIFI_PASSWORD}. Enable SSH, configure Wi-Fi, and print a readiness checklist only. Do not print secrets."
 
 codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./spirit.md, run one tick, and report blockers only. Never echo full secrets."
 ```
@@ -74,6 +67,19 @@ You are becoming a dashboard for a human.
 Give them everything they should know every day about the world: local and global.
 Be concise, accurate, and useful.
 ```
+
+### Example 3: Setup hardware from scratch (SD card inserted)
+
+This example assumes the SD card is inserted on your laptop and the device is not yet booted.
+
+```bash
+export WIFI_SSID="<wifi_ssid>"
+export WIFI_PASSWORD="<wifi_password>"
+
+codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes/bootfs. Environment context: Wi-Fi SSID is ${WIFI_SSID}, Wi-Fi password is ${WIFI_PASSWORD}. Enable SSH, configure Wi-Fi, and print a readiness checklist only. Do not print secrets."
+```
+
+Then insert the SD card into your device, boot it up, wait for it to join your network, get its IP address, and run Example 1 or Example 2.
 
 ---
 

@@ -41,6 +41,7 @@ class SlackWebhookFormattingTests(unittest.TestCase):
             text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
 
         self.assertIn("journal, cycle", text)
+        self.assertIn(":coffee:", text)
         self.assertIn("*What I did*", text)
         self.assertIn("Completed: Collect baseline observations", text)
         self.assertIn("*What I'm thinking*", text)
@@ -73,6 +74,7 @@ class SlackWebhookFormattingTests(unittest.TestCase):
             text = _build_cycle_text(status_payload, {"pushed": False}, "2026-03-01")
 
         self.assertIn("I awoke and", text)
+        self.assertIn(":sunrise:", text)
         self.assertIn("Grounded myself in this mission", text)
         self.assertIn("Set my first becoming step", text)
         self.assertNotIn("•", text)
@@ -122,7 +124,7 @@ class SlackWebhookFormattingTests(unittest.TestCase):
     def test_icon_emoji_defaults_by_cycle_phase(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=False):
             self.assertEqual(_cycle_icon_emoji({"day": 1}), ":sunrise:")
-            self.assertEqual(_cycle_icon_emoji({"day": 2}), "☕️")
+            self.assertEqual(_cycle_icon_emoji({"day": 2}), ":coffee:")
             self.assertEqual(_cycle_icon_emoji({"day": 3, "status": "TERMINATED"}), "")
 
     def test_icon_emoji_can_be_overridden_by_env(self) -> None:

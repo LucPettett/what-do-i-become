@@ -74,7 +74,7 @@ def _update_icon_emoji() -> str:
     legacy = _legacy_icon_emoji()
     if legacy:
         return legacy
-    return "☕️"
+    return ":coffee:"
 
 
 def _cycle_icon_emoji(status_payload: dict[str, Any]) -> str | None:
@@ -150,7 +150,7 @@ def _build_awakening_text(status_payload: dict[str, Any], git_info: dict[str, An
     ]
     pushed = bool(git_info.get("pushed"))
 
-    lines = [f"*{_human_date(run_date)}, I awoke and:*"]
+    lines = [f"{_awakening_icon_emoji()} *{_human_date(run_date)}, I awoke and:*"]
     lines.append("")
     if purpose:
         lines.append(f"Grounded myself in this mission: {purpose}")
@@ -198,7 +198,7 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
     pushed = bool(git_info.get("pushed"))
 
     cycle_id = str(status_payload.get("cycle_id") or "-")
-    lines = [f"*{_human_date(run_date)} journal, cycle `{cycle_id}`*"]
+    lines = [f"{_update_icon_emoji()} *{_human_date(run_date)} journal, cycle `{cycle_id}`*"]
     lines.append("")
 
     lines.append("*What I did*")

@@ -24,19 +24,34 @@ As it evolves, WDIB will keep constructing its own software, becoming more auton
 
 ## Quickstart (Codex)
 
-### Without a Spirit (self-discovery)
+Use placeholders and keep real secrets out of git.
+
+### Hardware without a spirit (self-discovery)
 
 ```bash
-git clone https://github.com/<you>/what-do-i-become.git
-cd what-do-i-become && codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
-codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Configure src/.env with my API key, run setup, run once, and report exactly what is still blocking."
-```
+export WIFI_SSID="<wifi_ssid>"
+export WIFI_PASSWORD="<wifi_password>"
+export DEVICE_IP="<device_ip>"
+export OPENAI_API_KEY="<openai_api_key>"
+export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
 
-### With a Spirit (seeded mission)
-
-```bash
 git clone https://github.com/<you>/what-do-i-become.git
 cd what-do-i-become
+
+codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes/bootfs. Environment context: Wi-Fi SSID is ${WIFI_SSID}, Wi-Fi password is ${WIFI_PASSWORD}. Enable SSH, configure Wi-Fi, and print a readiness checklist only. Do not print secrets."
+
+codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}', run one tick, and report blockers only. Never echo full secrets."
+```
+
+### Hardware with a spirit
+
+```bash
+export WIFI_SSID="<wifi_ssid>"
+export WIFI_PASSWORD="<wifi_password>"
+export DEVICE_IP="<device_ip>"
+export OPENAI_API_KEY="<openai_api_key>"
+export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
+
 cat > ./spirit.md <<'SPIRIT'
 ## Mission
 You are determined to help clean up the beach of small-scale human rubbish.
@@ -47,21 +62,6 @@ Your role is to become excellent at spotting, tracking, and reducing litter in t
 - Keep public summaries high-level.
 - Keep detailed diagnostics local on the device.
 SPIRIT
-codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
-codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Use ./src/device/bootstrap_over_ssh.sh with --openai-api-key and --spirit-file ./spirit.md, then run once and report exactly what is still blocking."
-```
-
-### Explicit Context Prompt (demo pattern)
-
-If you want to make the operator context explicit inside the prompt, use placeholders and keep real secrets out of git:
-
-```bash
-export WIFI_SSID="<wifi_ssid>"
-export WIFI_PASSWORD="<wifi_password>"
-export DEVICE_IP="<device_ip>"
-export OPENAI_API_KEY="<openai_api_key>"
-export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
-
 codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes/bootfs. Environment context: Wi-Fi SSID is ${WIFI_SSID}, Wi-Fi password is ${WIFI_PASSWORD}. Enable SSH, configure Wi-Fi, and print a readiness checklist only. Do not print secrets."
 
 codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./spirit.md, run one tick, and report blockers only. Never echo full secrets."
@@ -87,7 +87,7 @@ Devices running right now. Auto-generated from `devices/*/public/status.json`.
 | `58f88ed7` | 2026-03-01 | 1 | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progres... | Help nearby people stay safer and better informed each day through local, observable conditions and actionable alerts. | Completed a technical maintenance cycle. | ACTIVE |
 <!-- DEVICE_DASHBOARD_END -->
 
-## Hardware with a spirit
+## Spirit on Hardware
 
 Every device has a **`SPIRIT.md`** — the founding instructions for behavior and direction. This file is human-authored, but is also not required (empty spirits are fine). Regardless, spirit or no spirit, the device will evolve into something.
 

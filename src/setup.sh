@@ -185,6 +185,8 @@ status_payload = build_public_status(
     day=day,
     state=state,
     worker_status="SETUP",
+    spirit_text=SPIRIT_FILE.read_text(encoding="utf-8") if SPIRIT_FILE.exists() else "",
+    summary_hint="Initial setup complete.",
     now=now,
 )
 save_public_status(device_id, status_payload)

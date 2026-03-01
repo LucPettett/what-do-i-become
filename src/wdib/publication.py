@@ -71,6 +71,45 @@ def _safe_reflection(summary_hint: str) -> str:
     return cleaned
 
 
+def _extract_spirit_purpose(spirit_text: str) -> str:
+    raw = str(spirit_text or "")
+    if not raw.strip():
+        return ""
+
+    lines = [line.strip() for line in raw.splitlines() if line.strip()]
+    if not lines:
+        return ""
+
+    for idx, line in enumerate(lines):
+        normalized = line.lstrip("#").strip().lower()
+        if normalized != "mission":
+            continue
+        for candidate in lines[idx + 1 :]:
+            if candidate.startswith("#"):
+                break
+            cleaned = candidate.lstrip("-* ").strip()
+            if cleaned:
+                return _sanitize(cleaned, max_len=180)
+        break
+
+    for line in lines:
+        if line.startswith("#") or line.startswith("```"):
+            continue
+        cleaned = line.lstrip("-* ").strip()
+        if cleaned:
+            return _sanitize(cleaned, max_len=180)
+    return ""
+
+
+def _recent_activity(summary_hint: str) -> str:
+    reflected = _safe_reflection(summary_hint)
+    if reflected:
+        return reflected
+    if str(summary_hint or "").strip():
+        return "Completed a technical maintenance cycle."
+    return "No recent activity published yet."
+
+
 def build_public_status(
     *,
     device_id: str,
@@ -78,6 +117,8 @@ def build_public_status(
     day: int,
     state: dict[str, Any],
     worker_status: str,
+    spirit_text: str = "",
+    summary_hint: str = "",
     now: datetime | None = None,
 ) -> dict[str, Any]:
     at = now or datetime.now()
@@ -95,7 +136,9 @@ def build_public_status(
         "day": int(day),
         "status": str(state.get("status") or "UNKNOWN"),
         "worker_status": str(worker_status or "UNKNOWN"),
+        "purpose": _extract_spirit_purpose(spirit_text) or "Unset (add a mission in SPIRIT.md).",
         "becoming": _sanitize(str((state.get("purpose") or {}).get("becoming") or "")),
+        "recent_activity": _recent_activity(summary_hint),
         "counts": {
             "tasks": {
                 "todo": _count_status(tasks, "TODO"),

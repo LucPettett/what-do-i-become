@@ -15,8 +15,10 @@ START_MARKER = "<!-- DEVICE_DASHBOARD_START -->"
 END_MARKER = "<!-- DEVICE_DASHBOARD_END -->"
 
 
-def _table_cell(value: Any) -> str:
+def _table_cell(value: Any, *, max_len: int = 120) -> str:
     text = str(value or "").replace("\n", " ").strip()
+    if len(text) > max_len:
+        text = text[: max_len - 1].rstrip() + "..."
     return text.replace("|", "\\|")
 
 
@@ -40,6 +42,8 @@ def load_device_rows() -> list[dict[str, Any]]:
             day_display = "0"
 
         becoming = str(payload.get("becoming") or "").strip() or "-"
+        purpose = str(payload.get("purpose") or "").strip() or "-"
+        recent_activity = str(payload.get("recent_activity") or "").strip() or "-"
         status = str(payload.get("status") or "-").strip() or "-"
 
         rows.append(
@@ -47,7 +51,9 @@ def load_device_rows() -> list[dict[str, Any]]:
                 "device": _table_cell(short_id),
                 "awoke": _table_cell(awoke),
                 "day": _table_cell(day_display),
+                "purpose": _table_cell(purpose, max_len=110),
                 "becoming": _table_cell(becoming),
+                "recent_activity": _table_cell(recent_activity, max_len=110),
                 "status": _table_cell(status),
             }
         )
@@ -59,16 +65,16 @@ def load_device_rows() -> list[dict[str, Any]]:
 def render_dashboard(rows: list[dict[str, Any]]) -> str:
     lines = [
         START_MARKER,
-        "| Device | Awoke | Day | Becoming | Status |",
-        "| --- | --- | ---: | --- | --- |",
+        "| Device | Awoke | Day | Purpose | Becoming | Recent Activity | Status |",
+        "| --- | --- | ---: | --- | --- | --- | --- |",
     ]
 
     if not rows:
-        lines.append("| - | - | 0 | - | - |")
+        lines.append("| - | - | 0 | - | - | - | - |")
     else:
         for row in rows:
             lines.append(
-                f"| `{row['device']}` | {row['awoke']} | {row['day']} | {row['becoming']} | {row['status']} |"
+                f"| `{row['device']}` | {row['awoke']} | {row['day']} | {row['purpose']} | {row['becoming']} | {row['recent_activity']} | {row['status']} |"
             )
 
     lines.append(END_MARKER)

@@ -70,6 +70,62 @@ def _record_runtime_failure(state: dict[str, Any], message: str) -> None:
     state["last_summary"] = message
 
 
+_META_BECOMING_MARKERS = (
+    "wdib",
+    "control-plane",
+    "control plane",
+    "worker_result",
+    "schema",
+    "task machinery",
+    "verified tasks",
+    "runtime reliability",
+    "autonomous loop",
+)
+
+
+def _looks_framework_internal_becoming(text: str) -> bool:
+    value = str(text or "").strip().lower()
+    if not value:
+        return False
+    return any(marker in value for marker in _META_BECOMING_MARKERS)
+
+
+def _clear_framework_becoming_from_state_when_spirit_empty(
+    state: dict[str, Any],
+    *,
+    spirit_text: str,
+) -> dict[str, Any] | None:
+    if str(spirit_text or "").strip():
+        return None
+    existing = str(state.get("purpose", {}).get("becoming") or "").strip()
+    if not existing or not _looks_framework_internal_becoming(existing):
+        return None
+    state.setdefault("purpose", {})["becoming"] = ""
+    return {
+        "type": "BECOMING_CLEARED",
+        "from": existing,
+        "reason": "SPIRIT.md is empty and becoming was framework-internal; awaiting an external mission.",
+    }
+
+
+def _reject_framework_becoming_when_spirit_empty(
+    worker_result: dict[str, Any],
+    *,
+    spirit_text: str,
+) -> dict[str, Any] | None:
+    if str(spirit_text or "").strip():
+        return None
+    candidate = str(worker_result.get("becoming") or "").strip()
+    if not candidate or not _looks_framework_internal_becoming(candidate):
+        return None
+    worker_result.pop("becoming", None)
+    return {
+        "type": "BECOMING_REJECTED",
+        "candidate": candidate,
+        "reason": "SPIRIT.md is empty and candidate becoming was framework-internal; propose human/environment outcomes instead.",
+    }
+
+
 def _append_notification_events(
     device_id: str,
     cycle_id: str,
@@ -101,6 +157,13 @@ def run_tick() -> dict[str, Any]:
     spirit_text = load_spirit_text()
     spirit_path = str(SPIRIT_FILE)
     state = load_state(device_id, spirit_path=spirit_path)
+    pre_cycle_event = _clear_framework_becoming_from_state_when_spirit_empty(
+        state,
+        spirit_text=spirit_text,
+    )
+    if pre_cycle_event:
+        save_state(device_id, state)
+        append_event(device_id, pre_cycle_event)
 
     previous_day = int(state.get("day") or 0)
     day = previous_day + 1
@@ -151,6 +214,13 @@ def run_tick() -> dict[str, Any]:
             project_root=Path(PROJECT_ROOT),
             timeout_seconds=codex_timeout_seconds(),
         )
+        rejected_becoming_event = _reject_framework_becoming_when_spirit_empty(
+            worker_result,
+            spirit_text=spirit_text,
+        )
+        if rejected_becoming_event:
+            rejected_becoming_event["cycle_id"] = cycle_id
+            append_event(device_id, rejected_becoming_event)
         save_worker_result(device_id, cycle_id, worker_result)
 
         append_event(
@@ -189,6 +259,8 @@ def run_tick() -> dict[str, Any]:
             day=day,
             state=state,
             worker_status=str(worker_result.get("status") or "UNKNOWN"),
+            spirit_text=spirit_text,
+            summary_hint=str(state.get("last_summary") or ""),
             now=started_at,
         )
         public_status_file = save_public_status(device_id, public_status_payload)

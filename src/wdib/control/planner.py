@@ -66,7 +66,9 @@ def plan_work_order(
         )
     else:
         objective = (
-            "Self-discover system capabilities and propose the next concrete tasks to advance purpose."
+            "Inspect local physical/environment context and propose the next concrete tasks "
+            "that create external human value. Prefer mission options tied to real-world "
+            "observation or action over internal WDIB housekeeping."
         )
 
     spirit_excerpt = spirit_text.strip()

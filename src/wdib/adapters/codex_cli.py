@@ -123,6 +123,8 @@ def _prompt_from_work_order(work_order: dict[str, Any]) -> str:
         "2) For behavior/code changes, write or update tests first, then implement minimal code.\n"
         "3) Before claiming success, run concrete verification commands and report evidence.\n"
         "Include verification evidence in worker_result.summary.\n"
+        "If you set worker_result.becoming, make it human/environment-outcome oriented.\n"
+        "Do not use framework-internal becoming statements about WDIB loops, schemas, or task machinery.\n"
         "When finished, return ONLY the worker_result JSON.\n"
         "Do not invent fields. Follow schema_version 1.0 exactly.\n\n"
         "WORK_ORDER_JSON:\n"

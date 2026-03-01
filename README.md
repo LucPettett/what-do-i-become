@@ -37,22 +37,18 @@ codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from http
 ```bash
 git clone https://github.com/<you>/what-do-i-become.git
 cd what-do-i-become
-cat > ./my-spirit.md <<'SPIRIT'
+cat > ./spirit.md <<'SPIRIT'
 ## Mission
-You are a security monitoring device.
-On your network there are Dragino movement sensors on LoRa:
-- Sensor 1: driveway entrance
-- Sensor 2: mid-driveway
-- Sensor 3: house perimeter
-Your goal is to become smart at monitoring and alerting your human.
+You are determined to help clean up the beach of small-scale human rubbish.
+Your role is to become excellent at spotting, tracking, and reducing litter in the local beach environment.
 
 ## Rules
-- Prefer high-confidence alerts over noisy alerts.
+- Prioritize high-impact clean-up opportunities.
 - Keep public summaries high-level.
 - Keep detailed diagnostics local on the device.
 SPIRIT
 codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
-codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Use ./src/device/bootstrap_over_ssh.sh with --openai-api-key and --spirit-file ./my-spirit.md, then run once and report exactly what is still blocking."
+codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Use ./src/device/bootstrap_over_ssh.sh with --openai-api-key and --spirit-file ./spirit.md, then run once and report exactly what is still blocking."
 ```
 
 ### Explicit Context Prompt (demo pattern)
@@ -68,14 +64,15 @@ export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
 
 codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes/bootfs. Environment context: Wi-Fi SSID is ${WIFI_SSID}, Wi-Fi password is ${WIFI_PASSWORD}. Enable SSH, configure Wi-Fi, and print a readiness checklist only. Do not print secrets."
 
-codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./my-spirit.md, run one tick, and report blockers only. Never echo full secrets."
+codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./spirit.md, run one tick, and report blockers only. Never echo full secrets."
 ```
 
-For a beach mission, change `my-spirit.md` text to:
+You can alter `spirit.md` to steer the mission, for example:
 
 ```markdown
-You are determined to help clean up the beach of small-scale human rubbish.
-Your role is to become excellent at spotting, tracking, and reducing litter.
+You are becoming a dashboard for a human.
+Give them everything they should know every day about the world: local and global.
+Be concise, accurate, and useful.
 ```
 
 ---
@@ -85,9 +82,9 @@ Your role is to become excellent at spotting, tracking, and reducing litter.
 Devices running right now. Auto-generated from `devices/*/public/status.json`.
 
 <!-- DEVICE_DASHBOARD_START -->
-| Device | Awoke | Day | Becoming | Status |
-| --- | --- | ---: | --- | --- |
-| `58f88ed7` | 2026-03-01 | 2 | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progress. | ACTIVE |
+| Device | Awoke | Day | Purpose | Becoming | Recent Activity | Status |
+| --- | --- | ---: | --- | --- | --- | --- |
+| `58f88ed7` | 2026-03-01 | 2 | - | Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progress. | - | ACTIVE |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Hardware with a spirit
@@ -95,7 +92,8 @@ Devices running right now. Auto-generated from `devices/*/public/status.json`.
 Every device has a **`SPIRIT.md`** — the founding instructions for behavior and direction. This file is human-authored, but is also not required (empty spirits are fine). Regardless, spirit or no spirit, the device will evolve into something.
 
 - **A `SPIRIT.md` may be given.**
-- **A `becoming` is discovered.**
+- **A long-term purpose comes from Spirit.**
+- **A near-term becoming is discovered and evolves over time.**
 
 Every device will **self-orchestrate**: write code, run persistent processes, and manage its own services. In the beginning, the daily session is the primary window of agency but as time goes on, the device will become more and more autonomous.
 
@@ -105,31 +103,31 @@ This framework provides **a foundry for emergent behavior**.
 
 `SPIRIT.md` is the intent file for a device. It defines mission, priorities, tradeoffs, and non-negotiable boundaries.
 
+- Spirit is the long-term "why".
+- Becoming is the short-term "next direction".
 - Write Spirit in outcome language.
 - Keep Spirit stable across implementation changes.
 - If execution details change, update Skills instead of overloading Spirit.
 
 Optional Spirit files (shortcuts):
 - `src/SPIRIT.md.example` (generic template)
-- `src/SPIRIT.security-monitoring.example.md` (driveway/house motion monitoring demo)
 - `src/SPIRIT.beach-cleanup.example.md` (small-scale beach litter clean-up mission)
-
-Security monitoring demo excerpt:
-
-```markdown
-You are a security monitoring device.
-On your network there are Dragino movement sensors on LoRa:
-- Sensor 1: driveway entrance
-- Sensor 2: mid-driveway
-- Sensor 3: house perimeter
-Your goal is to become smart at monitoring and alerting your human.
-```
+- `src/SPIRIT.daily-dashboard.example.md` (daily local/global intelligence dashboard mission)
+- `src/SPIRIT.security-monitoring.example.md` (driveway/house motion monitoring demo)
 
 Beach clean-up demo excerpt:
 
 ```markdown
 You are determined to help clean up the beach of small-scale human rubbish.
 Your role is to become excellent at spotting, tracking, and reducing litter.
+```
+
+Daily dashboard demo excerpt:
+
+```markdown
+You are becoming a dashboard for a human.
+Give them everything they should know every day about the world: local and global.
+Be concise, accurate, and useful.
 ```
 
 ## Skills
@@ -242,6 +240,7 @@ WDIB_NOTIFICATION_CHANNELS=slack
 WDIB_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 WDIB_SLACK_USERNAME=wdib
 WDIB_SLACK_ICON_EMOJI=:satellite:
+WDIB_SLACK_MESSAGE_STYLE=human
 ```
 
 WDIB routes notifications through a channel router (`src/wdib/notifications/`).

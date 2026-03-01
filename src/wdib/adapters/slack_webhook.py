@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from urllib import error, request
 
@@ -30,12 +30,73 @@ def _timeout_seconds() -> float:
     return value
 
 
-def _build_cycle_text(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
+def _ordinal(day: int) -> str:
+    if 10 <= (day % 100) <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+    return f"{day}{suffix}"
+
+
+def _human_date(run_date: str) -> str:
+    try:
+        parsed = date.fromisoformat(run_date)
+    except ValueError:
+        return run_date
+    return f"{parsed.strftime('%A')} {_ordinal(parsed.day)} {parsed.strftime('%B')}"
+
+
+def _message_style() -> str:
+    raw = str(os.environ.get("WDIB_SLACK_MESSAGE_STYLE") or "human").strip().lower()
+    if raw == "detailed":
+        return "detailed"
+    return "human"
+
+
+def _build_cycle_text_human(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
+    purpose = str(status_payload.get("purpose") or "").strip()
+    becoming = str(status_payload.get("becoming") or "").strip()
+    pushed = bool(git_info.get("pushed"))
+    counts = status_payload.get("counts") or {}
+    task_counts = counts.get("tasks") or {}
+    hardware_counts = counts.get("hardware_requests") or {}
+    incidents_open = int(counts.get("incidents_open") or 0)
+
+    todo = int(task_counts.get("todo") or 0)
+    in_progress = int(task_counts.get("in_progress") or 0)
+    blocked = int(task_counts.get("blocked") or 0)
+    waiting_hardware = int(hardware_counts.get("open") or 0) + int(hardware_counts.get("detected") or 0)
+
+    lines = [f"*{_human_date(run_date)}, I awoke and:*"]
+    if purpose:
+        lines.append(f"- Stayed grounded in this purpose: {purpose}")
+    if becoming:
+        lines.append(f"- Took this next becoming step: {becoming}")
+    else:
+        lines.append("- Reflected on what I should become next.")
+
+    if todo or in_progress or blocked:
+        lines.append(f"- Kept work moving: {in_progress} in progress, {todo} todo, {blocked} blocked.")
+    if waiting_hardware:
+        lines.append(f"- Noted {waiting_hardware} hardware request(s) still waiting for verification.")
+    if incidents_open:
+        lines.append(f"- Saw {incidents_open} open incident(s) and kept detailed diagnostics local.")
+
+    if pushed:
+        lines.append("- Shared a sanitized daily update to GitHub.")
+    else:
+        lines.append("- Saved a sanitized daily update locally (GitHub push is still pending).")
+    lines.append("- Detailed logs remain on-device.")
+    return "\n".join(lines)
+
+
+def _build_cycle_text_detailed(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
     short_id = str(status_payload.get("device_id_short") or "-")
     day = int(status_payload.get("day") or 0)
     status = str(status_payload.get("status") or "UNKNOWN")
     worker_status = str(status_payload.get("worker_status") or "UNKNOWN")
     cycle_id = str(status_payload.get("cycle_id") or "-")
+    purpose = str(status_payload.get("purpose") or "").strip()
     becoming = str(status_payload.get("becoming") or "").strip()
     pushed = bool(git_info.get("pushed"))
     git_mark = "yes" if pushed else "no"
@@ -47,6 +108,8 @@ def _build_cycle_text(status_payload: dict[str, Any], git_info: dict[str, Any], 
         f"- Status: `{status}` | Worker: `{worker_status}`",
         f"- Cycle: `{cycle_id}`",
     ]
+    if purpose:
+        lines.append(f"- Purpose: {purpose}")
     if becoming:
         lines.append(f"- Becoming: {becoming}")
     lines.extend(
@@ -56,6 +119,12 @@ def _build_cycle_text(status_payload: dict[str, Any], git_info: dict[str, Any], 
         ]
     )
     return "\n".join(lines)
+
+
+def _build_cycle_text(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
+    if _message_style() == "detailed":
+        return _build_cycle_text_detailed(status_payload, git_info, run_date)
+    return _build_cycle_text_human(status_payload, git_info, run_date)
 
 
 def _build_failure_text(device_id: str, cycle_id: str, day: int, ts: datetime) -> str:

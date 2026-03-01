@@ -31,6 +31,11 @@ class PublicationTests(unittest.TestCase):
             day=7,
             state=state,
             worker_status="COMPLETED",
+            spirit_text=(
+                "## Mission\n"
+                "You are determined to help clean up the beach of small-scale human rubbish.\n"
+            ),
+            summary_hint="Compiled daily hotspot ranking for beach litter observations.",
             now=now,
         )
 
@@ -41,6 +46,8 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(payload["counts"]["hardware_requests"]["open"], 1)
         self.assertEqual(payload["counts"]["hardware_requests"]["verified"], 1)
         self.assertEqual(payload["counts"]["incidents_open"], 1)
+        self.assertIn("help clean up the beach", payload["purpose"])
+        self.assertIn("hotspot ranking", payload["recent_activity"])
 
     def test_daily_summary_redacts_paths_and_skips_technical_reflection(self) -> None:
         now = datetime(2026, 3, 1, 9, 0, 0)

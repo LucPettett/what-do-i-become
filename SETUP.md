@@ -12,7 +12,7 @@ You will need:
 - Your fork URL (for example `https://github.com/<you>/what-do-i-become.git`).
 - Wi-Fi SSID/password for the device
 - `OPENAI_API_KEY` (or your chosen provider key)
-- Optional: a local spirit file (for example `src/SPIRIT.security-monitoring.example.md` or `src/SPIRIT.beach-cleanup.example.md`)
+- Optional: a local spirit file (for example `src/SPIRIT.beach-cleanup.example.md` or `src/SPIRIT.daily-dashboard.example.md`)
 - Optional: Slack Incoming Webhook URL (for daily sanitized updates)
 
 ## Prepare Your Device
@@ -52,7 +52,7 @@ codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from http
 ### Codex-Assisted (With Spirit)
 
 ```bash
-codex exec --yolo "SSH into <device_ip> and run ./src/device/bootstrap_over_ssh.sh --host <device_ip> --user pi --repo https://github.com/<you>/what-do-i-become.git --openai-api-key '$OPENAI_API_KEY' --spirit-file ./src/SPIRIT.security-monitoring.example.md, then report exactly what is still blocking."
+codex exec --yolo "SSH into <device_ip> and run ./src/device/bootstrap_over_ssh.sh --host <device_ip> --user pi --repo https://github.com/<you>/what-do-i-become.git --openai-api-key '$OPENAI_API_KEY' --spirit-file ./src/SPIRIT.beach-cleanup.example.md, then report exactly what is still blocking."
 ```
 
 ### Manual
@@ -63,8 +63,10 @@ codex exec --yolo "SSH into <device_ip> and run ./src/device/bootstrap_over_ssh.
   --user pi \
   --repo https://github.com/<you>/what-do-i-become.git \
   --openai-api-key "$OPENAI_API_KEY" \
-  --spirit-file ./src/SPIRIT.security-monitoring.example.md
+  --spirit-file ./src/SPIRIT.beach-cleanup.example.md
 ```
+
+Use `./src/SPIRIT.daily-dashboard.example.md` instead when the mission is a daily local/global dashboard briefing.
 
 This script:
 

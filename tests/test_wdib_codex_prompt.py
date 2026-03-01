@@ -30,6 +30,8 @@ class CodexPromptTests(unittest.TestCase):
         self.assertIn("write or update tests first", prompt)
         self.assertIn("run concrete verification commands and report evidence", prompt)
         self.assertIn("Include verification evidence in worker_result.summary.", prompt)
+        self.assertIn("make it human/environment-outcome oriented", prompt)
+        self.assertIn("Do not use framework-internal becoming statements", prompt)
         self.assertIn("WORK_ORDER_JSON:", prompt)
         self.assertIn('"objective": "Fix flaky parser task"', prompt)
 

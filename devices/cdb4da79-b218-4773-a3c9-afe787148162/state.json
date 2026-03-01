@@ -1,7 +1,7 @@
 {
   "artifacts": [],
   "awoke_on": "2026-02-28",
-  "day": 1,
+  "day": 2,
   "device_id": "cdb4da79-b218-4773-a3c9-afe787148162",
   "hardware_requests": [],
   "incidents": [
@@ -60,12 +60,68 @@
       "updated_on": "2026-03-01"
     }
   ],
-  "last_summary": "Execution environment failure prevented all work beyond initial probing. Verification evidence: `pwd && ls -la && rg --files` -> exit 101 with `error applying legacy Linux sandbox restrictions: Sandbox(LandlockRestrict)`; `ls` -> exit 101 with same error; `pwd` (login=false) -> exit 101 with same error. Because shell execution was unavailable, root-cause analysis of WDIB runtime failures, test-first code changes, and in-repo verification could not be performed, and result persistence to result_path could not be machine-verified.",
+  "last_summary": "Capability discovery completed with machine-observed checks. Root-cause analysis from `/devices/.../state.json` and `events.ndjson` shows prior WDIB runtime failures were caused by: missing `codex` in PATH (incident-001), unsupported `--ask-for-approval` flag usage in `codex exec` (incident-002), and invalid worker result shape (`device_id`/`tasks` and malformed incidents; incident-006). Current environment evidence: `python3 --version && which python3 && which codex && codex --version` => Python 3.13.5, `/usr/bin/python3`, `/usr/local/bin/codex`, codex-cli 0.106.0; `PYTHONPATH=src python3 -m wdib --help` and `PYTHONPATH=src python3 -m wdib tick --help` both succeed; `PYTHONPATH=src python3 -m unittest discover -s tests -v` => 5 tests passed; normalization/contract verification check succeeded (`normalized_status=BLOCKED`, `proposed_tasks=1`, `incidents=1`, `has_device_id=False`). Additional evidence: `python3 -m pytest -q` failed because `pytest` is not installed.",
   "purpose": {
     "becoming": "",
     "spirit_path": "/home/pi/development/what-do-i-become/src/SPIRIT.md"
   },
   "schema_version": "1.0",
   "status": "ACTIVE",
-  "tasks": []
+  "tasks": [
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Set a concrete `becoming` statement plus 2-3 measurable outcomes so future cycles can prioritize non-empty objectives and evaluate progress.",
+      "id": "task-20260301-001",
+      "notes": "Current `becoming` is empty in state/work order context.",
+      "status": "TODO",
+      "title": "Define purpose baseline and acceptance criteria",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Add an automated test that exercises `execute_work_order` in a controlled mode and verifies result-path creation plus schema-valid worker_result handling.",
+      "id": "task-20260301-002",
+      "notes": "Targets regressions behind incidents 002/004/006.",
+      "status": "TODO",
+      "title": "Add WDIB runtime smoke test for codex execution contract",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Persist full codex stdout/stderr to an artifact file (not only truncated snippets) when `codex exec` fails, and reference that path in incident summaries.",
+      "id": "task-20260301-003",
+      "notes": "Needed because incident summaries currently truncate critical failure context.",
+      "status": "TODO",
+      "title": "Improve codex failure diagnostics retention",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Document and enforce `PYTHONPATH=src python3 -m unittest discover -s tests -v` as baseline, and optionally add pytest install support if pytest workflow is desired.",
+      "id": "task-20260301-004",
+      "notes": "Observed `pytest` missing while unittest suite is healthy.",
+      "status": "TODO",
+      "title": "Standardize local test command and dependency bootstrap",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Review incident-001..006 against current code behavior, mark resolved root causes in state process, and open only currently reproducible failures.",
+      "id": "task-20260301-005",
+      "notes": "Several incidents appear historical and no longer reproducible with current baseline checks.",
+      "status": "TODO",
+      "title": "Triage historical runtime incidents and resolve stale entries",
+      "updated_on": "2026-03-01"
+    }
+  ]
 }

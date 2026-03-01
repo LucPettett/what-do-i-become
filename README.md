@@ -37,12 +37,30 @@ codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from http
 ```bash
 git clone https://github.com/<you>/what-do-i-become.git
 cd what-do-i-become
-cp src/SPIRIT.security-monitoring.example.md ./my-spirit.md
+cat > ./my-spirit.md <<'SPIRIT'
+## Mission
+You are a security monitoring device.
+On your network there are Dragino movement sensors on LoRa:
+- Sensor 1: driveway entrance
+- Sensor 2: mid-driveway
+- Sensor 3: house perimeter
+Your goal is to become smart at monitoring and alerting your human.
+
+## Rules
+- Prefer high-confidence alerts over noisy alerts.
+- Keep public summaries high-level.
+- Keep detailed diagnostics local on the device.
+SPIRIT
 codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
 codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Use ./src/device/bootstrap_over_ssh.sh with --openai-api-key and --spirit-file ./my-spirit.md, then run once and report exactly what is still blocking."
 ```
 
-Use `src/SPIRIT.beach-cleanup.example.md` instead if the mission is beach litter clean-up.
+For a beach mission, change `my-spirit.md` text to:
+
+```markdown
+You are determined to help clean up the beach of small-scale human rubbish.
+Your role is to become excellent at spotting, tracking, and reducing litter.
+```
 
 ---
 
@@ -75,7 +93,7 @@ This framework provides **a foundry for emergent behavior**.
 - Keep Spirit stable across implementation changes.
 - If execution details change, update Skills instead of overloading Spirit.
 
-Example Spirit files:
+Optional Spirit files (shortcuts):
 - `src/SPIRIT.md.example` (generic template)
 - `src/SPIRIT.security-monitoring.example.md` (driveway/house motion monitoring demo)
 - `src/SPIRIT.beach-cleanup.example.md` (small-scale beach litter clean-up mission)

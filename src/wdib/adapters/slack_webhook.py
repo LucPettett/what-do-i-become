@@ -56,6 +56,12 @@ def _message_style() -> str:
 def _build_cycle_text_human(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
     purpose = str(status_payload.get("purpose") or "").strip()
     becoming = str(status_payload.get("becoming") or "").strip()
+    recent_activity = str(status_payload.get("recent_activity") or "").strip()
+    next_tasks = [
+        str(item).strip()
+        for item in list(status_payload.get("next_tasks") or [])
+        if str(item).strip()
+    ]
     pushed = bool(git_info.get("pushed"))
     counts = status_payload.get("counts") or {}
     task_counts = counts.get("tasks") or {}
@@ -68,19 +74,31 @@ def _build_cycle_text_human(status_payload: dict[str, Any], git_info: dict[str, 
     waiting_hardware = int(hardware_counts.get("open") or 0) + int(hardware_counts.get("detected") or 0)
 
     lines = [f"*{_human_date(run_date)}, I awoke and:*"]
-    if purpose:
-        lines.append(f"- Stayed grounded in this purpose: {purpose}")
-    if becoming:
-        lines.append(f"- Took this next becoming step: {becoming}")
+    if recent_activity:
+        lines.append(f"- What I did: {recent_activity}")
     else:
-        lines.append("- Reflected on what I should become next.")
+        lines.append("- What I did: Kept moving forward on my mission.")
 
-    if todo or in_progress or blocked:
-        lines.append(f"- Kept work moving: {in_progress} in progress, {todo} todo, {blocked} blocked.")
+    if becoming:
+        lines.append(f"- What I'm thinking: {becoming}")
+    elif purpose:
+        lines.append(f"- What I'm thinking: {purpose}")
+    else:
+        lines.append("- What I'm thinking: I need to define my direction more clearly.")
+
+    if next_tasks:
+        lines.append(f"- What's next: {next_tasks[0]}")
+        for task_title in next_tasks[1:3]:
+            lines.append(f"- Then: {task_title}")
+    elif todo or in_progress or blocked:
+        lines.append(f"- What's next: {in_progress} in progress, {todo} todo, {blocked} blocked.")
+    else:
+        lines.append("- What's next: Continue observation and propose the next concrete task.")
+
     if waiting_hardware:
-        lines.append(f"- Noted {waiting_hardware} hardware request(s) still waiting for verification.")
+        lines.append(f"- Waiting on hardware verification: {waiting_hardware} request(s).")
     if incidents_open:
-        lines.append(f"- Saw {incidents_open} open incident(s) and kept detailed diagnostics local.")
+        lines.append(f"- Open incidents to resolve: {incidents_open}.")
 
     if pushed:
         lines.append("- Shared a sanitized daily update to GitHub.")

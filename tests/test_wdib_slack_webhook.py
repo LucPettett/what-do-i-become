@@ -25,6 +25,11 @@ class SlackWebhookFormattingTests(unittest.TestCase):
             "cycle_id": "cycle-002-20260301T112400",
             "purpose": "Help clean local beaches by reducing litter hotspots.",
             "becoming": "Improve hotspot detection and daily clean-up guidance.",
+            "recent_activity": "Inspected local shoreline signals and drafted next tasks.",
+            "next_tasks": [
+                "Improve hotspot detection confidence.",
+                "Refine daily clean-up recommendation wording.",
+            ],
             "counts": {
                 "tasks": {"todo": 2, "in_progress": 1, "done": 1, "blocked": 0},
                 "hardware_requests": {"open": 0, "detected": 0, "verified": 0, "failed": 0},
@@ -35,8 +40,10 @@ class SlackWebhookFormattingTests(unittest.TestCase):
             text = _build_cycle_text(status_payload, {"pushed": True}, "2026-03-01")
 
         self.assertIn("I awoke and", text)
-        self.assertIn("Stayed grounded in this purpose", text)
-        self.assertIn("Took this next becoming step", text)
+        self.assertIn("What I did:", text)
+        self.assertIn("What I'm thinking:", text)
+        self.assertIn("What's next:", text)
+        self.assertIn("Then:", text)
         self.assertIn("Shared a sanitized daily update to GitHub.", text)
         self.assertNotIn("Cycle:", text)
         self.assertNotIn("Status:", text)

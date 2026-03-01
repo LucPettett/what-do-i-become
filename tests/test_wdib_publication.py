@@ -21,7 +21,11 @@ class PublicationTests(unittest.TestCase):
             "awoke_on": "2026-02-24",
             "status": "ACTIVE",
             "purpose": {"becoming": "Observe and understand my environment."},
-            "tasks": [{"status": "TODO"}, {"status": "DONE"}],
+            "tasks": [
+                {"status": "IN_PROGRESS", "title": "Map beach litter hotspots"},
+                {"status": "TODO", "title": "Improve confidence scoring"},
+                {"status": "DONE", "title": "Collect baseline observations"},
+            ],
             "hardware_requests": [{"status": "OPEN"}, {"status": "VERIFIED"}],
             "incidents": [{"status": "OPEN"}, {"status": "RESOLVED"}],
         }
@@ -42,12 +46,17 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(payload["device_id_short"], "11111111")
         self.assertEqual(payload["first_awoke_on"], "2026-02-24")
         self.assertEqual(payload["counts"]["tasks"]["todo"], 1)
+        self.assertEqual(payload["counts"]["tasks"]["in_progress"], 1)
         self.assertEqual(payload["counts"]["tasks"]["done"], 1)
         self.assertEqual(payload["counts"]["hardware_requests"]["open"], 1)
         self.assertEqual(payload["counts"]["hardware_requests"]["verified"], 1)
         self.assertEqual(payload["counts"]["incidents_open"], 1)
         self.assertIn("help clean up the beach", payload["purpose"])
         self.assertIn("hotspot ranking", payload["recent_activity"])
+        self.assertEqual(
+            payload["next_tasks"],
+            ["Map beach litter hotspots", "Improve confidence scoring"],
+        )
 
     def test_daily_summary_redacts_paths_and_skips_technical_reflection(self) -> None:
         now = datetime(2026, 3, 1, 9, 0, 0)

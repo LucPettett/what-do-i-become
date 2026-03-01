@@ -261,6 +261,7 @@ def run_tick() -> dict[str, Any]:
             worker_status=str(worker_result.get("status") or "UNKNOWN"),
             spirit_text=spirit_text,
             summary_hint=str(state.get("last_summary") or ""),
+            objective_hint=str(work_order.get("objective") or ""),
             now=started_at,
         )
         public_status_file = save_public_status(device_id, public_status_payload)

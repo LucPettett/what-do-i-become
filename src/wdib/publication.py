@@ -49,6 +49,21 @@ def _count_status(items: list[dict[str, Any]], expected: str) -> int:
     return sum(1 for item in items if str(item.get("status") or "").upper() == target)
 
 
+def _next_task_titles(tasks: list[dict[str, Any]]) -> list[str]:
+    picked: list[str] = []
+    for desired in ("IN_PROGRESS", "TODO"):
+        for task in tasks:
+            status = str(task.get("status") or "").upper()
+            if status != desired:
+                continue
+            title = _sanitize(str(task.get("title") or ""), max_len=100)
+            if title and title not in picked:
+                picked.append(title)
+            if len(picked) >= 3:
+                return picked
+    return picked
+
+
 def _safe_reflection(summary_hint: str) -> str:
     cleaned = _sanitize(summary_hint, max_len=160)
     if not cleaned:
@@ -101,13 +116,42 @@ def _extract_spirit_purpose(spirit_text: str) -> str:
     return ""
 
 
-def _recent_activity(summary_hint: str) -> str:
-    reflected = _safe_reflection(summary_hint)
-    if reflected:
-        return reflected
-    if str(summary_hint or "").strip():
-        return "Completed a technical maintenance cycle."
-    return "No recent activity published yet."
+def _recent_activity(summary_hint: str, objective_hint: str) -> str:
+    summary_text = str(summary_hint or "").strip()
+    if summary_text:
+        trimmed = summary_text
+        for marker in (
+            "Verification evidence:",
+            "Commands run:",
+            "State/context probes:",
+            "Result contract verification:",
+        ):
+            idx = trimmed.find(marker)
+            if idx != -1:
+                trimmed = trimmed[:idx].strip()
+        reflected = _safe_reflection(trimmed)
+        if reflected:
+            lowered = reflected.lower()
+            if "proposed next tasks" in lowered:
+                return "Inspected local context and drafted the next tasks."
+            if "capability discovery" in lowered:
+                return "Completed capability discovery and mapped the next steps."
+            return reflected
+
+    objective = str(objective_hint or "").strip()
+    if objective:
+        if objective.startswith("Advance task "):
+            _, _, suffix = objective.partition(":")
+            candidate = suffix.strip() or objective
+            return f"Worked on: {_sanitize(candidate, max_len=150)}"
+        lowered = objective.lower()
+        if "hardware requests are pending" in lowered:
+            return "Kept software work moving while waiting for hardware verification."
+        if "inspect local physical/environment context" in lowered:
+            return "Inspected local environment and planned practical next steps."
+        return _sanitize(objective, max_len=160)
+
+    return "Made steady progress on mission-aligned work."
 
 
 def build_public_status(
@@ -119,6 +163,7 @@ def build_public_status(
     worker_status: str,
     spirit_text: str = "",
     summary_hint: str = "",
+    objective_hint: str = "",
     now: datetime | None = None,
 ) -> dict[str, Any]:
     at = now or datetime.now()
@@ -138,7 +183,8 @@ def build_public_status(
         "worker_status": str(worker_status or "UNKNOWN"),
         "purpose": _extract_spirit_purpose(spirit_text) or "Unset (add a mission in SPIRIT.md).",
         "becoming": _sanitize(str((state.get("purpose") or {}).get("becoming") or "")),
-        "recent_activity": _recent_activity(summary_hint),
+        "recent_activity": _recent_activity(summary_hint, objective_hint),
+        "next_tasks": _next_task_titles(tasks),
         "counts": {
             "tasks": {
                 "todo": _count_status(tasks, "TODO"),

@@ -24,9 +24,11 @@ As it evolves, WDIB will keep constructing its own software, becoming more auton
 
 ## Quickstart (Codex)
 
-Use placeholders and keep real secrets out of git.
+Most people start with hardware already running on the network.
+Use Example 1 or Example 2 in that case.
+Use Example 3 only when preparing a brand new SD card.
 
-### Example 1: Running hardware without a spirit (self-discovery)
+### Example 1: Existing hardware without a spirit (self-discovery)
 
 ```bash
 export DEVICE_IP="<device_ip>"
@@ -39,7 +41,7 @@ cd what-do-i-become
 codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}', run one tick, and report blockers only. Never echo full secrets."
 ```
 
-### Example 2: Running hardware with a spirit (beach clean-up default)
+### Example 2: Existing hardware with a spirit (beach clean-up default)
 
 ```bash
 export DEVICE_IP="<device_ip>"
@@ -63,7 +65,7 @@ Give them everything they should know every day about the world: local and globa
 Be concise, accurate, and useful.
 ```
 
-### Example 3: Setup hardware from scratch (SD card inserted)
+### Example 3: New hardware setup from scratch (SD card inserted)
 
 This example assumes the SD card is inserted on your laptop and the device is not yet booted.
 

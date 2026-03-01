@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import date, datetime
 from typing import Any
 from urllib import error, request
@@ -284,10 +285,29 @@ def _extract_json_object(raw_text: str) -> dict[str, Any] | None:
         return None
 
 
+_DOUBLE_ASTERISK_BOLD_RE = re.compile(r"\*\*(?=\S)(.+?)(?<=\S)\*\*")
+_DOUBLE_UNDERSCORE_BOLD_RE = re.compile(r"__(?=\S)(.+?)(?<=\S)__")
+
+
+def _normalize_for_slack_mrkdwn(text: str) -> str:
+    """Convert common Markdown variants into Slack mrkdwn equivalents."""
+    value = str(text or "").strip()
+    if not value:
+        return ""
+    # Slack bold is *text*, not **text** or __text__.
+    value = _DOUBLE_ASTERISK_BOLD_RE.sub(r"*\1*", value)
+    value = _DOUBLE_UNDERSCORE_BOLD_RE.sub(r"*\1*", value)
+    return value
+
+
 def _llm_prompt_context(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> dict[str, Any]:
     counts = status_payload.get("counts") or {}
+    device_id_short = str(status_payload.get("device_id_short") or "-")
+    system_profile = str(status_payload.get("system_profile") or "").strip()
     return {
         "message_type": _pick_message_type(status_payload),
+        "device_id_short": device_id_short,
+        "device_summary": system_profile or f"Device ID {device_id_short}",
         "run_date": _human_date(run_date),
         "cycle_id": str(status_payload.get("cycle_id") or "-"),
         "day": int(status_payload.get("day") or 0),
@@ -296,7 +316,7 @@ def _llm_prompt_context(status_payload: dict[str, Any], git_info: dict[str, Any]
         "purpose": str(status_payload.get("purpose") or "").strip(),
         "becoming": str(status_payload.get("becoming") or "").strip(),
         "recent_activity": str(status_payload.get("recent_activity") or "").strip(),
-        "system_profile": str(status_payload.get("system_profile") or "").strip(),
+        "system_profile": system_profile,
         "self_observation": str(status_payload.get("self_observation") or "").strip(),
         "completed_tasks": [str(item).strip() for item in list(status_payload.get("completed_tasks") or [])][:3],
         "next_tasks": [str(item).strip() for item in list(status_payload.get("next_tasks") or [])][:3],
@@ -327,8 +347,10 @@ def _build_cycle_text_llm(status_payload: dict[str, Any], git_info: dict[str, An
         "3) Start with two lines exactly in this shape: 'Device: ...' and 'Purpose: ...'.\n"
         "4) Keep it short: 80-220 words.\n"
         "5) Use Slack-friendly Markdown and bullets where helpful.\n"
-        "6) Never mention internal filenames, schema names, secrets, IPs, tokens, or local paths.\n"
-        "7) If message_type is 'terminate', write a graceful closing note.\n"
+        "6) Use Slack mrkdwn syntax. For bold use *text* (never **text**).\n"
+        "7) Never write '(unspecified)' or '(not specified)' for Device/Purpose.\n"
+        "8) Never mention internal filenames, schema names, secrets, IPs, tokens, or local paths.\n"
+        "9) If message_type is 'terminate', write a graceful closing note.\n"
         "Return strict JSON with one key: text."
     )
     context = _llm_prompt_context(status_payload, git_info, run_date)
@@ -405,7 +427,7 @@ def _post_text(text: str, *, icon_emoji_override: str | None = None) -> dict[str
     if not url:
         return {"sent": False, "reason": "WDIB_SLACK_WEBHOOK_URL is not configured"}
 
-    payload: dict[str, Any] = {"text": text}
+    payload: dict[str, Any] = {"text": _normalize_for_slack_mrkdwn(text)}
     username = str(os.environ.get("WDIB_SLACK_USERNAME") or "").strip()
     if icon_emoji_override is None:
         icon_emoji = str(_legacy_icon_emoji()).strip()

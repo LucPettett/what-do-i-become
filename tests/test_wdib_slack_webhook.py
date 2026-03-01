@@ -13,7 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from wdib.adapters import slack_webhook  # noqa: E402
-from wdib.adapters.slack_webhook import _build_cycle_text, _cycle_icon_emoji  # noqa: E402
+from wdib.adapters.slack_webhook import (  # noqa: E402
+    _build_cycle_text,
+    _cycle_icon_emoji,
+    _normalize_for_slack_mrkdwn,
+)
 
 
 class SlackWebhookFormattingTests(unittest.TestCase):
@@ -168,6 +172,15 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         ):
             self.assertEqual(_cycle_icon_emoji({"day": 1}), ":sunrise:")
             self.assertEqual(_cycle_icon_emoji({"day": 3}), ":coffee:")
+
+    def test_normalize_for_slack_mrkdwn_converts_double_asterisk_bold(self) -> None:
+        raw = "**What I did**\n- Ran __checks__\n- kept *existing* slack bold"
+        normalized = _normalize_for_slack_mrkdwn(raw)
+        self.assertIn("*What I did*", normalized)
+        self.assertIn("*checks*", normalized)
+        self.assertIn("*existing*", normalized)
+        self.assertNotIn("**What I did**", normalized)
+        self.assertNotIn("__checks__", normalized)
 
 
 if __name__ == "__main__":

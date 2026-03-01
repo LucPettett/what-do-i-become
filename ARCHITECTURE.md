@@ -7,6 +7,7 @@ WDIB is split into two planes:
 - Owns cycle orchestration (`work_order` -> `worker_result`)
 - Owns hardware request lifecycle via machine-observed detection/verification
 - Owns event log (`events.ndjson`), session records, and sanitized publication commit/push
+- Owns modular notification routing (`src/wdib/notifications/`) for optional channels (for example Slack)
 
 2. Worker Plane (Codex)
 - Executes one scoped objective from `work_order`

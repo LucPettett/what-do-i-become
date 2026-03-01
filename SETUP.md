@@ -13,6 +13,7 @@ You will need:
 - Wi-Fi SSID/password for the device
 - `OPENAI_API_KEY` (or your chosen provider key)
 - Optional: a local spirit file (for example `src/SPIRIT.security-monitoring.example.md` or `src/SPIRIT.beach-cleanup.example.md`)
+- Optional: Slack Incoming Webhook URL (for daily sanitized updates)
 
 ## Prepare Your Device
 
@@ -74,6 +75,19 @@ This script:
 - writes `src/.env` values (`WDIB_LLM_PROVIDER`, `WDIB_LLM_MODEL`, optional `OPENAI_API_KEY`, `WDIB_GIT_REMOTE_URL`)
 - uploads `src/SPIRIT.md` before first setup/run when `--spirit-file` is provided
 - runs `./src/setup.sh` and one `./src/run.sh`
+
+### Optional: Enable Slack notifications
+
+On the device (`src/.env`):
+
+```bash
+WDIB_NOTIFICATION_CHANNELS=slack
+WDIB_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+WDIB_SLACK_USERNAME=wdib
+WDIB_SLACK_ICON_EMOJI=:satellite:
+```
+
+Notifications are routed through a modular channel router (`src/wdib/notifications/`), so more channels can be added later without changing the core tick flow.
 
 ### Important Deploy-Key Step
 

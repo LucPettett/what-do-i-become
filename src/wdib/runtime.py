@@ -13,6 +13,7 @@ from .control.planner import plan_work_order
 from .control.reducer import apply_worker_result
 from .control.spirit import load_spirit_text
 from .env import load_dotenv, resolve_device_id
+from .notifications.router import send_cycle_notifications, send_failure_notifications
 from .paths import PROJECT_ROOT, SPIRIT_FILE
 from .policy.safety import codex_timeout_seconds, command_timeout_seconds
 from .publication import build_public_daily_summary, build_public_status
@@ -67,6 +68,30 @@ def _record_runtime_failure(state: dict[str, Any], message: str) -> None:
         }
     )
     state["last_summary"] = message
+
+
+def _append_notification_events(
+    device_id: str,
+    cycle_id: str,
+    day: int,
+    results: list[dict[str, Any]],
+) -> None:
+    for result in results:
+        channel = str(result.get("channel") or "unknown")
+        sent = bool(result.get("sent"))
+        event_type = "NOTIFICATION_SENT" if sent else "NOTIFICATION_FAILED"
+        payload = {
+            "type": event_type,
+            "cycle_id": cycle_id,
+            "day": day,
+            "channel": channel,
+        }
+        if sent:
+            if "status_code" in result:
+                payload["status_code"] = result.get("status_code")
+        else:
+            payload["reason"] = str(result.get("reason") or "unknown")
+        append_event(device_id, payload)
 
 
 def run_tick() -> dict[str, Any]:
@@ -192,6 +217,13 @@ def run_tick() -> dict[str, Any]:
             },
         )
 
+        notification_results = send_cycle_notifications(
+            status_payload=public_status_payload,
+            git_info=git_info,
+            run_date=run_date,
+        )
+        _append_notification_events(device_id, cycle_id, day, notification_results)
+
         return {
             "device_id": device_id,
             "cycle_id": cycle_id,
@@ -202,6 +234,7 @@ def run_tick() -> dict[str, Any]:
             "public_status_path": str(public_status_file),
             "public_daily_path": str(public_daily_file),
             "git": git_info,
+            "notifications": notification_results,
         }
 
     except (CodexRunFailure, Exception) as exc:
@@ -216,4 +249,11 @@ def run_tick() -> dict[str, Any]:
                 "error": str(exc),
             },
         )
+        failure_notification_results = send_failure_notifications(
+            device_id=device_id,
+            cycle_id=cycle_id,
+            day=day,
+            ts=datetime.now(),
+        )
+        _append_notification_events(device_id, cycle_id, day, failure_notification_results)
         raise

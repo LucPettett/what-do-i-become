@@ -200,6 +200,19 @@ cp src/.env.example src/.env
 nano src/.env
 ```
 
+Optional notifications (modular):
+
+```bash
+# In src/.env
+WDIB_NOTIFICATION_CHANNELS=slack
+WDIB_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+WDIB_SLACK_USERNAME=wdib
+WDIB_SLACK_ICON_EMOJI=:satellite:
+```
+
+WDIB routes notifications through a channel router (`src/wdib/notifications/`).
+Today: `slack`. Future channels can be added as provider modules without changing tick logic.
+
 Run once manually:
 
 ```bash

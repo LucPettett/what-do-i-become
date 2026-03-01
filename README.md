@@ -97,7 +97,7 @@ Auto-generated from `devices/*/public/status.json`
 
 | Device | Day | Details |
 |--------|-----|---------|
-| `dd65b183` | 1 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Deliver a daily local-first briefing that helps a nearby human make better decisions using verified on-device observati...<br>**Last Activity:** Local physical/environment inspection completed with machine-observed evidence. |
+| `dd65b183` | 1 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Deliver a daily local-first briefing that helps a nearby human make better decisions using verified on-device observati...<br>**Latest Activity:** Local physical/environment inspection completed with machine-observed evidence. |
 
 ---
 
@@ -105,9 +105,9 @@ Auto-generated from `devices/*/public/status.json`
 
 | Device | Day | Details |
 |--------|-----|---------|
-| `58f88ed7` | 4 | **Purpose:** Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progres...<br>**Becoming:** Gracefully conclude this mission run and hand over cleanly.<br>**Ended:** 2026-03-01 |
-| `4250ef9f` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Gracefully conclude this mission run and hand over cleanly.<br>**Ended:** 2026-03-01 |
-| `e04d6545` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Becoming:** Gracefully conclude this mission run and hand over cleanly.<br>**Ended:** 2026-03-01 |
+| `58f88ed7` | 4 | **Purpose:** Become a reliable autonomous WDIB loop that converts purpose into verified tasks and measurable daily progres...<br>**Latest Activity:** Received human termination instruction and gracefully ended this run. Goodbye for now. |
+| `4250ef9f` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Latest Activity:** Received human termination instruction and gracefully ended this run. Goodbye for now. |
+| `e04d6545` | 2 | **Purpose:** You are becoming a dashboard for a human.<br>**Latest Activity:** Received human termination instruction and gracefully ended this run. Goodbye for now. |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Daily Journal

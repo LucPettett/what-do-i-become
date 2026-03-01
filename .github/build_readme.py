@@ -22,15 +22,11 @@ def _table_cell(value: Any, *, max_len: int = 120) -> str:
     return text.replace("|", "\\|")
 
 
-def _detail_cell(*, purpose: str, becoming: str, last_activity: str = "", ended: str = "") -> str:
-    parts = [
-        f"**Purpose:** {purpose}",
-        f"**Becoming:** {becoming}",
-    ]
-    if ended:
-        parts.append(f"**Ended:** {ended}")
-    else:
-        parts.append(f"**Last Activity:** {last_activity}")
+def _detail_cell(*, purpose: str, last_activity: str, becoming: str = "") -> str:
+    parts = [f"**Purpose:** {purpose}"]
+    if becoming:
+        parts.append(f"**Becoming:** {becoming}")
+    parts.append(f"**Latest Activity:** {last_activity}")
     return "<br>".join(parts)
 
 
@@ -99,8 +95,8 @@ def render_dashboard(rows: list[dict[str, Any]]) -> str:
         for row in active_rows:
             detail = _detail_cell(
                 purpose=row["purpose"],
-                becoming=row["becoming"],
                 last_activity=row["recent_activity"],
+                becoming=row["becoming"],
             )
             lines.append(
                 f"| `{row['device']}` | {row['day']} | {detail} |"
@@ -124,8 +120,7 @@ def render_dashboard(rows: list[dict[str, Any]]) -> str:
         for row in terminated_rows:
             detail = _detail_cell(
                 purpose=row["purpose"],
-                becoming=row["becoming"],
-                ended=row["date"],
+                last_activity=row["recent_activity"],
             )
             lines.append(
                 f"| `{row['device']}` | {row['day']} | {detail} |"

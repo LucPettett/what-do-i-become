@@ -1,0 +1,47 @@
+{
+  "becoming": "Help the nearby human leave home safer and with fewer avoidable disruptions by turning local observations into immediate action.",
+  "completed_tasks": [],
+  "counts": {
+    "hardware_requests": {
+      "detected": 0,
+      "failed": 0,
+      "open": 0,
+      "verified": 0
+    },
+    "incidents_open": 0,
+    "tasks": {
+      "blocked": 0,
+      "done": 0,
+      "in_progress": 1,
+      "todo": 3
+    }
+  },
+  "cycle_id": "cycle-002-20260301T144206",
+  "date": "2026-03-01",
+  "day": 2,
+  "device_id_short": "e60d3087",
+  "engineering_details": [
+    "`imagesnap -l` -> No video devices found.",
+    "`PYTHONPATH=src python3 ... validate_payload(..., 'worker_result.schema.json', l...` -> worker_result_schema_valid",
+    "`date` -> 2026-03-01T14:42:58+1000 Sunday and [redacted-path]` points to `Australia/Brisbane` (location confidence: medium, timez...",
+    "Artifact: Worker result for cycle-001-[redacted-token] containing local environment evidence and externally oriented next tasks.",
+    "Artifact: Twice-daily doorstep hazard scan protocol with checklist, action-tip rules, and fallback handling when sensing hardware...",
+    "Artifact: Initialized 2026-03-01 doorstep scan log entry with exactly three action tips and explicit unknown confidence due to mi..."
+  ],
+  "first_awoke_on": "2026-03-01",
+  "hardware_focus": [],
+  "next_tasks": [
+    "Run a twice-daily doorstep hazard scan with action tips",
+    "Launch a pre-departure power readiness check",
+    "Add local connectivity reliability checks with fallback guidance"
+  ],
+  "public_notice": "Sanitized publication only. Detailed logs remain on-device.",
+  "purpose": "You exist to run a physical dashboard, in order to improve the life of a human.",
+  "recent_activity": "Advanced task task-20260301-001 by implementing a twice-daily doorstep hazard scan protocol for this device and initializing today's doorstep scan log with thr...",
+  "schema_version": "1.0",
+  "self_observation": "I have enough clarity and momentum to keep improving tomorrow.",
+  "status": "ACTIVE",
+  "system_profile": "",
+  "updated_at": "2026-03-01T14:42:06",
+  "worker_status": "COMPLETED"
+}

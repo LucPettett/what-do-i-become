@@ -1,6 +1,10 @@
 src/.env
 src/.device_id
 devices/*/human_message.txt
+devices/*/state.json
+devices/*/events.ndjson
+devices/*/sessions/
+devices/*/runtime/
 __pycache__/
 *.pyc
 src/cron.log

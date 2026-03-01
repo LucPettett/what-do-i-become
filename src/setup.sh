@@ -149,6 +149,7 @@ export WDIB_DEVICE_ID="$DEVICE_ID"
 python3 - <<'PY'
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 project_root = Path(os.environ['PROJECT_ROOT'])
@@ -157,13 +158,43 @@ src_dir = project_root / 'src'
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-from wdib.storage.repository import ensure_layout, default_state, save_state  # noqa: E402
+from wdib.contracts import load_json  # noqa: E402
 from wdib.paths import SPIRIT_FILE  # noqa: E402
+from wdib.publication import build_public_daily_summary, build_public_status  # noqa: E402
+from wdib.storage.repository import (  # noqa: E402
+    default_state,
+    ensure_layout,
+    save_public_daily_summary,
+    save_public_status,
+    save_state,
+)
 
 paths = ensure_layout(device_id)
 if not paths['state'].exists():
     state = default_state(device_id=device_id, spirit_path=str(SPIRIT_FILE))
     save_state(device_id, state)
+else:
+    state = load_json(paths['state'])
+
+now = datetime.now()
+run_date = now.date().isoformat()
+day = int(state.get("day") or 0)
+status_payload = build_public_status(
+    device_id=device_id,
+    cycle_id="setup-000",
+    day=day,
+    state=state,
+    worker_status="SETUP",
+    now=now,
+)
+save_public_status(device_id, status_payload)
+summary_markdown = build_public_daily_summary(
+    status_payload=status_payload,
+    objective="Prepared WDIB runtime and repository wiring.",
+    summary_hint="Initial setup complete.",
+    now=now,
+)
+save_public_daily_summary(device_id, day=day, run_date=run_date, markdown=summary_markdown)
 PY
 
 chmod +x "$FRAMEWORK_DIR/run.sh" "$FRAMEWORK_DIR/setup.sh"
@@ -207,11 +238,11 @@ fi
 SHORT_ID="${DEVICE_ID:0:8}"
 TODAY="$(date +%F)"
 
-git add "devices/${DEVICE_ID}"
-if ! git diff --cached --quiet -- "devices/${DEVICE_ID}"; then
-  git commit -m "${SHORT_ID} awoke (${TODAY})" -- "devices/${DEVICE_ID}" || true
+git add "devices/${DEVICE_ID}/public"
+if ! git diff --cached --quiet -- "devices/${DEVICE_ID}/public"; then
+  git commit -m "${SHORT_ID} awoke (${TODAY})" -- "devices/${DEVICE_ID}/public" || true
 else
-  echo "  No new device files to commit"
+  echo "  No new public files to commit"
 fi
 
 if is_true "$GIT_AUTO_PUSH"; then

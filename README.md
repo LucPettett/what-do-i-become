@@ -24,17 +24,31 @@ As it evolves, WDIB will keep constructing its own software, becoming more auton
 
 ## Quickstart (Codex)
 
+### Without a Spirit (self-discovery)
+
 ```bash
 git clone https://github.com/<you>/what-do-i-become.git
 cd what-do-i-become && codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
 codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Configure src/.env with my API key, run setup, run once, and report exactly what is still blocking."
 ```
 
+### With a Spirit (seeded mission)
+
+```bash
+git clone https://github.com/<you>/what-do-i-become.git
+cd what-do-i-become
+cp src/SPIRIT.security-monitoring.example.md ./my-spirit.md
+codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /Volumes/bootfs. Ensure SSH is enabled, Wi-Fi is configured, and print a readiness checklist only."
+codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Use ./src/device/bootstrap_over_ssh.sh with --openai-api-key and --spirit-file ./my-spirit.md, then run once and report exactly what is still blocking."
+```
+
+Use `src/SPIRIT.beach-cleanup.example.md` instead if the mission is beach litter clean-up.
+
 ---
 
 ## Live Devices
 
-Devices running right now. Auto-generated from `devices/*/state.json`.
+Devices running right now. Auto-generated from `devices/*/public/status.json`.
 
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Becoming | Status |
@@ -61,6 +75,29 @@ This framework provides **a foundry for emergent behavior**.
 - Write Spirit in outcome language.
 - Keep Spirit stable across implementation changes.
 - If execution details change, update Skills instead of overloading Spirit.
+
+Example Spirit files:
+- `src/SPIRIT.md.example` (generic template)
+- `src/SPIRIT.security-monitoring.example.md` (driveway/house motion monitoring demo)
+- `src/SPIRIT.beach-cleanup.example.md` (small-scale beach litter clean-up mission)
+
+Security monitoring demo excerpt:
+
+```markdown
+You are a security monitoring device.
+On your network there are Dragino movement sensors on LoRa:
+- Sensor 1: driveway entrance
+- Sensor 2: mid-driveway
+- Sensor 3: house perimeter
+Your goal is to become smart at monitoring and alerting your human.
+```
+
+Beach clean-up demo excerpt:
+
+```markdown
+You are determined to help clean up the beach of small-scale human rubbish.
+Your role is to become excellent at spotting, tracking, and reducing litter.
+```
 
 ## Skills
 
@@ -92,7 +129,7 @@ The device determines it needs a temperature sensor, logs a part request, and wa
 
 The repo is the product. Fork `what-do-i-become`, point devices at it, and the repo becomes your monitoring layer and observability.
 
-All of your devices will commit to fork of this repo, under  `devices/<uuid>/`, and a GitHub Action rebuilds the README dashboard from `devices/*/state.json`.
+All of your devices publish sanitized updates under `devices/<uuid>/public/`, and a GitHub Action rebuilds the README dashboard from `devices/*/public/status.json`.
 
 ## How It Works
 
@@ -102,7 +139,7 @@ On first launch, before the daily loop exists, the device goes through an awaken
 
 It self-discovers by deep-diving what it can observe: hardware buses and peripherals, OS/runtime capabilities, network interfaces/routes/connectivity, and local system state. It writes and executes its own code and commands to probe, verify, and map those capabilities.
 
-It then generates a unique device ID, creates `devices/<uuid>/`, writes initial state (`awoke` set to today, `becoming` empty), and establishes its first memory record. This is the first claim of identity.
+It then generates a unique device ID, creates `devices/<uuid>/`, writes initial local state, and publishes a first sanitized public summary. This is the first claim of identity.
 
 Because awakening includes autonomous code execution, treat it as a high-risk phase and review the Safety warnings in [`SAFETY.md`](./SAFETY.md) before deployment, due to network access.
 
@@ -114,8 +151,8 @@ Once per day, WDIB runs a tick:
 2. Probe hardware requests and auto-advance status on machine evidence.
 3. Build a `work_order`.
 4. Run Codex worker on-device.
-5. Validate `worker_result`, reduce state, and write events/artifacts.
-6. Commit and push `devices/<uuid>/` changes.
+5. Validate `worker_result`, reduce local state, and write local events/artifacts.
+6. Publish sanitized daily summary + status under `devices/<uuid>/public/` and push.
 
 State continuity is tracked in:
 
@@ -155,7 +192,7 @@ chmod +x src/setup.sh
 ./src/setup.sh
 ```
 
-Setup generates a unique device ID, creates `devices/<uuid>/`, writes the canonical `state.json`, configures daily cron at 09:00, and creates the first commit.
+Setup generates a unique device ID, creates `devices/<uuid>/`, writes local `state.json`, creates the first public summary/status, configures daily cron at 09:00, and creates the first commit.
 
 Set your API key:
 
@@ -179,12 +216,12 @@ Hardware installation does not require software acknowledgment. WDIB auto-detect
 - **`codex` CLI** — worker plane that executes each `work_order` and writes `worker_result`
 - **`src/skills/`** — bundled skills used by Codex worker tasks
 - **`skills/`** — optional user-authored skills that override bundled skills by name
-- **`devices/<uuid>/`** — canonical state and audit trail (`state.json`, `events.ndjson`, sessions, work orders, worker results)
+- **`devices/<uuid>/`** — local state and audit trail (`state.json`, `events.ndjson`, sessions, work orders, worker results), plus `public/` for sanitized publication
 - **`.github/`** — automation that rebuilds the Live Devices dashboard after pushes
 
 **State management:**
 
-The repo is the **single source of truth**. State, identity evolution (`becoming`), and operational history all live in version control. Every session commits its changes, making the entire system **auditable through git history**.
+The device-local filesystem is the source of truth for raw state and logs. GitHub receives only sanitized publication artifacts (`devices/<uuid>/public/`) for remote observability.
 
 ## Setup
 

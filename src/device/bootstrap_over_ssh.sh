@@ -14,13 +14,15 @@ Optional:
   --user <name>              SSH user (default: pi)
   --port <port>              SSH port (default: 22)
   --openai-api-key <key>     OPENAI_API_KEY to write into src/.env
+  --spirit-file <path>       Local SPIRIT.md file to upload before first run
   --skip-run                 Skip initial ./src/run.sh
 
 Example:
   ./src/device/bootstrap_over_ssh.sh \\
     --host 192.168.4.173 \\
     --repo https://github.com/<you>/what-do-i-become.git \\
-    --openai-api-key "\$OPENAI_API_KEY"
+    --openai-api-key "\$OPENAI_API_KEY" \\
+    --spirit-file ./src/SPIRIT.security-monitoring.example.md
 USAGE
 }
 
@@ -59,6 +61,8 @@ USER="pi"
 PORT="22"
 REPO_URL=""
 OPENAI_API_KEY=""
+SPIRIT_FILE_PATH=""
+SPIRIT_B64=""
 RUN_ONCE="1"
 
 while [ "$#" -gt 0 ]; do
@@ -83,6 +87,10 @@ while [ "$#" -gt 0 ]; do
       OPENAI_API_KEY="${2:-}"
       shift 2
       ;;
+    --spirit-file)
+      SPIRIT_FILE_PATH="${2:-}"
+      shift 2
+      ;;
     --skip-run)
       RUN_ONCE="0"
       shift 1
@@ -102,6 +110,26 @@ done
 if [ -z "$HOST" ] || [ -z "$REPO_URL" ]; then
   usage
   exit 2
+fi
+
+if [ -n "$SPIRIT_FILE_PATH" ]; then
+  if [ ! -f "$SPIRIT_FILE_PATH" ]; then
+    echo "[ERR] --spirit-file not found: $SPIRIT_FILE_PATH" >&2
+    exit 2
+  fi
+  if command -v base64 >/dev/null 2>&1; then
+    SPIRIT_B64="$(base64 < "$SPIRIT_FILE_PATH" | tr -d '\n')"
+  else
+    SPIRIT_B64="$(python3 - "$SPIRIT_FILE_PATH" <<'PY'
+import base64
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+print(base64.b64encode(path.read_bytes()).decode("ascii"), end="")
+PY
+)"
+  fi
 fi
 
 CLONE_URL="$REPO_URL"
@@ -124,13 +152,14 @@ if [ -n "$REMOTE_URL" ]; then
   echo "[INFO] Push URL:  $REMOTE_URL"
 fi
 
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" bash -s -- "$CLONE_URL" "$REMOTE_URL" "$OPENAI_API_KEY" "$RUN_ONCE" <<'REMOTE'
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" bash -s -- "$CLONE_URL" "$REMOTE_URL" "$OPENAI_API_KEY" "$RUN_ONCE" "$SPIRIT_B64" <<'REMOTE'
 set -euo pipefail
 
 CLONE_URL="$1"
 REMOTE_URL="$2"
 OPENAI_API_KEY="$3"
 RUN_ONCE="$4"
+SPIRIT_B64="$5"
 
 REPO_DIR="$HOME/development/what-do-i-become"
 SSH_DIR="$HOME/.ssh"
@@ -209,6 +238,22 @@ if [ -n "$OPENAI_API_KEY" ]; then
 fi
 if [ -n "$REMOTE_URL" ]; then
   set_env_value WDIB_GIT_REMOTE_URL "$REMOTE_URL" src/.env
+fi
+if [ -n "$SPIRIT_B64" ]; then
+  if command -v base64 >/dev/null 2>&1; then
+    printf '%s' "$SPIRIT_B64" | base64 -d > src/SPIRIT.md \
+      || printf '%s' "$SPIRIT_B64" | base64 --decode > src/SPIRIT.md
+  else
+    python3 - "$SPIRIT_B64" <<'PY'
+import base64
+import pathlib
+import sys
+
+payload = sys.argv[1].encode("ascii")
+pathlib.Path("src/SPIRIT.md").write_bytes(base64.b64decode(payload))
+PY
+  fi
+  echo "[INFO] Uploaded SPIRIT.md from --spirit-file"
 fi
 chmod 600 src/.env || true
 

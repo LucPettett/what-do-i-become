@@ -1,16 +1,45 @@
-"""Git commit/push adapter for per-device WDIB traces."""
+"""Git commit/push adapter for per-device WDIB publication."""
 
 from __future__ import annotations
 
 import os
 import subprocess
-from typing import Any
+from pathlib import Path
+from typing import Any, Iterable
 
 from ..env import env_bool
 from ..paths import PROJECT_ROOT
 
 
-def commit_device_changes(device_id: str, day: int, status: str) -> dict[str, Any]:
+def _normalize_publish_paths(paths: Iterable[str]) -> list[str]:
+    root = Path(PROJECT_ROOT).resolve()
+    normalized: list[str] = []
+    for raw in paths:
+        value = str(raw or "").strip()
+        if not value:
+            continue
+        path = Path(value)
+        if path.is_absolute():
+            try:
+                value = str(path.resolve().relative_to(root))
+            except ValueError:
+                continue
+        normalized.append(value)
+
+    deduped: list[str] = []
+    for item in normalized:
+        if item not in deduped:
+            deduped.append(item)
+    return deduped
+
+
+def commit_device_changes(
+    device_id: str,
+    day: int,
+    status: str,
+    *,
+    publish_paths: list[str] | None = None,
+) -> dict[str, Any]:
     if env_bool("WDIB_SKIP_GIT_COMMIT", default=False):
         return {
             "committed": False,
@@ -18,7 +47,14 @@ def commit_device_changes(device_id: str, day: int, status: str) -> dict[str, An
             "message": "Skipped git commit because WDIB_SKIP_GIT_COMMIT=true.",
         }
 
-    device_rel = f"devices/{device_id}"
+    paths_to_publish = _normalize_publish_paths(publish_paths or [f"devices/{device_id}/public"])
+    if not paths_to_publish:
+        return {
+            "committed": False,
+            "pushed": False,
+            "message": "No publish paths configured for commit.",
+        }
+
     short_id = device_id[:8]
 
     remote = (os.environ.get("WDIB_GIT_REMOTE") or "origin").strip() or "origin"
@@ -34,10 +70,10 @@ def commit_device_changes(device_id: str, day: int, status: str) -> dict[str, An
     if git_user_email:
         subprocess.run(["git", "config", "user.email", git_user_email], check=False)
 
-    subprocess.run(["git", "add", device_rel], check=True)
+    subprocess.run(["git", "add", "--", *paths_to_publish], check=True)
 
     changed = subprocess.run(
-        ["git", "diff", "--cached", "--name-only", "--", device_rel],
+        ["git", "diff", "--cached", "--name-only", "--", *paths_to_publish],
         capture_output=True,
         text=True,
         check=True,
@@ -46,7 +82,7 @@ def commit_device_changes(device_id: str, day: int, status: str) -> dict[str, An
         return {"committed": False, "pushed": False, "message": "No device changes to commit."}
 
     message = f"{short_id} day {day:03d} - {status}"
-    subprocess.run(["git", "commit", "-m", message, "--", device_rel], check=True)
+    subprocess.run(["git", "commit", "-m", message, "--", *paths_to_publish], check=True)
 
     if not auto_push:
         return {"committed": True, "pushed": False, "message": message}

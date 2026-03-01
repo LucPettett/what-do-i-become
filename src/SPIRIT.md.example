@@ -4,6 +4,8 @@ Use this file to guide the device's direction and constraints.
 This is guidance text. It is separate from `state.json` fields like `purpose.becoming`.
 
 If this file is missing, the device self-discovers its path.
+For a concrete monitoring example, see `src/SPIRIT.security-monitoring.example.md`.
+For an environmental mission example, see `src/SPIRIT.beach-cleanup.example.md`.
 
 ## Spirit vs Skills contract
 - Spirit sets outcomes and boundaries (`what` and `why`).

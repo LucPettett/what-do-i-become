@@ -3,7 +3,7 @@ name: Update README Dashboard
 on:
   push:
     paths:
-      - "devices/*/state.json"
+      - "devices/*/public/status.json"
       - ".github/build_readme.py"
   workflow_dispatch:
 

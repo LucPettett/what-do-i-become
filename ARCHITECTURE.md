@@ -6,7 +6,7 @@ WDIB is split into two planes:
 - Owns durable state (`devices/<uuid>/state.json`)
 - Owns cycle orchestration (`work_order` -> `worker_result`)
 - Owns hardware request lifecycle via machine-observed detection/verification
-- Owns event log (`events.ndjson`), session records, and git commit/push
+- Owns event log (`events.ndjson`), session records, and sanitized publication commit/push
 
 2. Worker Plane (Codex)
 - Executes one scoped objective from `work_order`
@@ -19,7 +19,7 @@ WDIB is split into two planes:
 - Hardware requests advance only by machine evidence:
   - `OPEN` -> `DETECTED` -> `VERIFIED`
   - Optional fallback: `DETECTED` -> `OPEN` if signal disappears
-- GitHub remains the observability control tower; each cycle commits under `devices/<uuid>/`.
+- GitHub remains the observability control tower; each cycle publishes only `devices/<uuid>/public/`.
 - Contract-first integration: all control/worker exchange validated by JSON schema.
 
 ## Canonical Files per Device
@@ -29,6 +29,8 @@ WDIB is split into two planes:
 - `devices/<uuid>/sessions/day_XXX_<date>.json`
 - `devices/<uuid>/runtime/work_orders/<cycle>.json`
 - `devices/<uuid>/runtime/worker_results/<cycle>.json`
+- `devices/<uuid>/public/status.json`
+- `devices/<uuid>/public/daily/day_XXX_<date>.md`
 
 ## Tick Flow
 
@@ -38,4 +40,4 @@ WDIB is split into two planes:
 4. Run Codex worker.
 5. Validate and apply `worker_result` through reducer.
 6. Persist state/events/session.
-7. Commit and push device changes.
+7. Commit and push sanitized public artifacts.

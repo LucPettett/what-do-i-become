@@ -12,6 +12,7 @@ You will need:
 - Your fork URL (for example `https://github.com/<you>/what-do-i-become.git`).
 - Wi-Fi SSID/password for the device
 - `OPENAI_API_KEY` (or your chosen provider key)
+- Optional: a local spirit file (for example `src/SPIRIT.security-monitoring.example.md` or `src/SPIRIT.beach-cleanup.example.md`)
 
 ## Prepare Your Device
 
@@ -47,6 +48,12 @@ After the Pi boots and has an IP address, setup can be done by you or by Codex.
 codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Configure src/.env with my API key, run setup, run once, and report exactly what is still blocking."
 ```
 
+### Codex-Assisted (With Spirit)
+
+```bash
+codex exec --yolo "SSH into <device_ip> and run ./src/device/bootstrap_over_ssh.sh --host <device_ip> --user pi --repo https://github.com/<you>/what-do-i-become.git --openai-api-key '$OPENAI_API_KEY' --spirit-file ./src/SPIRIT.security-monitoring.example.md, then report exactly what is still blocking."
+```
+
 ### Manual
 
 ```bash
@@ -54,7 +61,8 @@ codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from http
   --host <device_ip> \
   --user pi \
   --repo https://github.com/<you>/what-do-i-become.git \
-  --openai-api-key "$OPENAI_API_KEY"
+  --openai-api-key "$OPENAI_API_KEY" \
+  --spirit-file ./src/SPIRIT.security-monitoring.example.md
 ```
 
 This script:
@@ -64,6 +72,7 @@ This script:
 - creates `~/.ssh/wdib_repo` deploy key (if missing)
 - sets `origin` to `git@github-wdib:<you>/what-do-i-become.git` for GitHub repos
 - writes `src/.env` values (`WDIB_LLM_PROVIDER`, `WDIB_LLM_MODEL`, optional `OPENAI_API_KEY`, `WDIB_GIT_REMOTE_URL`)
+- uploads `src/SPIRIT.md` before first setup/run when `--spirit-file` is provided
 - runs `./src/setup.sh` and one `./src/run.sh`
 
 ### Important Deploy-Key Step
@@ -91,7 +100,7 @@ git remote -v
 ./src/run.sh
 ```
 
-In GitHub, confirm new commits under `devices/<uuid>/`.
+In GitHub, confirm new commits under `devices/<uuid>/public/`.
 
 ## Reset and Rollback
 

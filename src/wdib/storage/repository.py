@@ -10,6 +10,9 @@ from ..contracts import dump_json, load_json, validate_payload
 from ..paths import (
     DEVICES_DIR,
     EVENTS_FILE_NAME,
+    PUBLIC_DAILY_DIR_NAME,
+    PUBLIC_DIR_NAME,
+    PUBLIC_STATUS_FILE_NAME,
     RUNTIME_DIR_NAME,
     SESSIONS_DIR_NAME,
     STATE_FILE_NAME,
@@ -29,6 +32,7 @@ def _now() -> str:
 def device_paths(device_id: str) -> dict[str, Path]:
     device_dir = DEVICES_DIR / device_id
     runtime_dir = device_dir / RUNTIME_DIR_NAME
+    public_dir = device_dir / PUBLIC_DIR_NAME
     return {
         "device_dir": device_dir,
         "state": device_dir / STATE_FILE_NAME,
@@ -37,6 +41,9 @@ def device_paths(device_id: str) -> dict[str, Path]:
         "runtime": runtime_dir,
         "work_orders": runtime_dir / WORK_ORDERS_DIR_NAME,
         "worker_results": runtime_dir / WORKER_RESULTS_DIR_NAME,
+        "public_dir": public_dir,
+        "public_daily": public_dir / PUBLIC_DAILY_DIR_NAME,
+        "public_status": public_dir / PUBLIC_STATUS_FILE_NAME,
     }
 
 
@@ -46,6 +53,7 @@ def ensure_layout(device_id: str) -> dict[str, Path]:
     paths["sessions"].mkdir(parents=True, exist_ok=True)
     paths["work_orders"].mkdir(parents=True, exist_ok=True)
     paths["worker_results"].mkdir(parents=True, exist_ok=True)
+    paths["public_daily"].mkdir(parents=True, exist_ok=True)
     return paths
 
 
@@ -135,4 +143,19 @@ def save_session_record(device_id: str, day: int, payload: dict[str, Any]) -> Pa
     filename = f"day_{day:03d}_{run_date}.json"
     path = paths["sessions"] / filename
     dump_json(path, payload)
+    return path
+
+
+def save_public_status(device_id: str, payload: dict[str, Any]) -> Path:
+    paths = ensure_layout(device_id)
+    path = paths["public_status"]
+    dump_json(path, payload)
+    return path
+
+
+def save_public_daily_summary(device_id: str, day: int, run_date: str, markdown: str) -> Path:
+    paths = ensure_layout(device_id)
+    filename = f"day_{day:03d}_{run_date}.md"
+    path = paths["public_daily"] / filename
+    path.write_text(markdown, encoding="utf-8")
     return path

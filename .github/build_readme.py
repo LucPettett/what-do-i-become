@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build README dashboard from devices/*/state.json."""
+"""Build README dashboard from devices/*/public/status.json."""
 
 from __future__ import annotations
 
@@ -25,22 +25,21 @@ def load_device_rows() -> list[dict[str, Any]]:
     if not DEVICES_DIR.exists():
         return rows
 
-    for state_json in sorted(DEVICES_DIR.glob("*/state.json")):
+    for status_json in sorted(DEVICES_DIR.glob("*/public/status.json")):
         try:
-            payload = json.loads(state_json.read_text(encoding="utf-8")) or {}
+            payload = json.loads(status_json.read_text(encoding="utf-8")) or {}
         except Exception:
             continue
 
-        full_id = str(payload.get("device_id") or state_json.parent.name).strip()
-        short_id = full_id[:8] if full_id else "-"
-        awoke = str(payload.get("awoke_on") or "-").strip() or "-"
+        short_id = str(payload.get("device_id_short") or status_json.parent.parent.name[:8]).strip() or "-"
+        awoke = str(payload.get("first_awoke_on") or payload.get("date") or "-").strip() or "-"
         day = payload.get("day")
         try:
             day_display = str(int(day))
         except (TypeError, ValueError):
             day_display = "0"
 
-        becoming = str((payload.get("purpose") or {}).get("becoming") or "").strip() or "-"
+        becoming = str(payload.get("becoming") or "").strip() or "-"
         status = str(payload.get("status") or "-").strip() or "-"
 
         rows.append(
@@ -84,7 +83,7 @@ def replace_dashboard(readme_text: str, dashboard_text: str) -> str:
 
     suffix = (
         "\n\n## Device Dashboard\n"
-        "Auto-generated from `devices/*/state.json`.\n\n"
+        "Auto-generated from `devices/*/public/status.json`.\n\n"
         f"{dashboard_text}\n"
     )
     return readme_text.rstrip() + suffix

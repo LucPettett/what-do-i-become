@@ -39,7 +39,7 @@ Devices running right now. Auto-generated from `devices/*/state.json`.
 <!-- DEVICE_DASHBOARD_START -->
 | Device | Awoke | Day | Becoming | Status |
 | --- | --- | ---: | --- | --- |
-| - | - | 0 | - | - |
+| `cdb4da79` | 2026-02-28 | 1 | - | ACTIVE |
 <!-- DEVICE_DASHBOARD_END -->
 
 ## Hardware with a spirit

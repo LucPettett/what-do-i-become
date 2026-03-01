@@ -55,6 +55,22 @@ codex exec --yolo "prepare my Raspberry Pi SD card for what-do-i-become using /V
 codex exec --yolo "SSH into <device_ip> and bootstrap what-do-i-become from https://github.com/<you>/what-do-i-become.git. Use ./src/device/bootstrap_over_ssh.sh with --openai-api-key and --spirit-file ./my-spirit.md, then run once and report exactly what is still blocking."
 ```
 
+### Explicit Context Prompt (demo pattern)
+
+If you want to make the operator context explicit inside the prompt, use placeholders and keep real secrets out of git:
+
+```bash
+export WIFI_SSID="<wifi_ssid>"
+export WIFI_PASSWORD="<wifi_password>"
+export DEVICE_IP="<device_ip>"
+export OPENAI_API_KEY="<openai_api_key>"
+export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
+
+codex exec --yolo "You are preparing a Raspberry Pi SD card for WDIB at /Volumes/bootfs. Environment context: Wi-Fi SSID is ${WIFI_SSID}, Wi-Fi password is ${WIFI_PASSWORD}. Enable SSH, configure Wi-Fi, and print a readiness checklist only. Do not print secrets."
+
+codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./my-spirit.md, run one tick, and report blockers only. Never echo full secrets."
+```
+
 For a beach mission, change `my-spirit.md` text to:
 
 ```markdown

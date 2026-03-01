@@ -22,6 +22,18 @@ def _table_cell(value: Any, *, max_len: int = 120) -> str:
     return text.replace("|", "\\|")
 
 
+def _detail_cell(*, purpose: str, becoming: str, last_activity: str = "", ended: str = "") -> str:
+    parts = [
+        f"**Purpose:** {purpose}",
+        f"**Becoming:** {becoming}",
+    ]
+    if ended:
+        parts.append(f"**Ended:** {ended}")
+    else:
+        parts.append(f"**Last Activity:** {last_activity}")
+    return "<br>".join(parts)
+
+
 def load_device_rows() -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if not DEVICES_DIR.exists():
@@ -35,22 +47,25 @@ def load_device_rows() -> list[dict[str, Any]]:
 
         short_id = str(payload.get("device_id_short") or status_json.parent.parent.name[:8]).strip() or "-"
         awoke = str(payload.get("first_awoke_on") or payload.get("date") or "-").strip() or "-"
+        date = str(payload.get("date") or "-").strip() or "-"
         day = payload.get("day")
         try:
-            day_display = str(int(day))
+            day_int = int(day)
         except (TypeError, ValueError):
-            day_display = "0"
+            day_int = 0
 
         becoming = str(payload.get("becoming") or "").strip() or "-"
         purpose = str(payload.get("purpose") or "").strip() or "-"
         recent_activity = str(payload.get("recent_activity") or "").strip() or "-"
-        status = str(payload.get("status") or "-").strip() or "-"
+        status = str(payload.get("status") or "-").strip().upper() or "-"
 
         rows.append(
             {
                 "device": _table_cell(short_id),
                 "awoke": _table_cell(awoke),
-                "day": _table_cell(day_display),
+                "date": _table_cell(date),
+                "day": _table_cell(str(day_int)),
+                "day_int": day_int,
                 "purpose": _table_cell(purpose, max_len=110),
                 "becoming": _table_cell(becoming),
                 "recent_activity": _table_cell(recent_activity, max_len=110),
@@ -58,23 +73,62 @@ def load_device_rows() -> list[dict[str, Any]]:
             }
         )
 
-    rows.sort(key=lambda row: (row["awoke"], row["device"]))
+    rows.sort(key=lambda row: (-int(row["day_int"]), row["device"]))
     return rows
 
 
 def render_dashboard(rows: list[dict[str, Any]]) -> str:
+    active_rows = [row for row in rows if row["status"] != "TERMINATED"]
+    terminated_rows = [row for row in rows if row["status"] == "TERMINATED"]
+
     lines = [
         START_MARKER,
-        "| Device | Awoke | Day | Purpose | Becoming | Recent Activity | Status |",
-        "| --- | --- | ---: | --- | --- | --- | --- |",
+        "Auto-generated from `devices/*/public/status.json`",
+        "",
+        "---",
+        "",
+        "## 🟢 Active",
+        "",
+        "| Device | Day | Details |",
+        "|--------|-----|---------|",
     ]
 
-    if not rows:
-        lines.append("| - | - | 0 | - | - | - | - |")
+    if not active_rows:
+        lines.append("| - | 0 | - |")
     else:
-        for row in rows:
+        for row in active_rows:
+            detail = _detail_cell(
+                purpose=row["purpose"],
+                becoming=row["becoming"],
+                last_activity=row["recent_activity"],
+            )
             lines.append(
-                f"| `{row['device']}` | {row['awoke']} | {row['day']} | {row['purpose']} | {row['becoming']} | {row['recent_activity']} | {row['status']} |"
+                f"| `{row['device']}` | {row['day']} | {detail} |"
+            )
+
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "## 🔴 Terminated",
+            "",
+            "| Device | Day | Details |",
+            "|--------|-----|---------|",
+        ]
+    )
+
+    if not terminated_rows:
+        lines.append("| - | 0 | - |")
+    else:
+        for row in terminated_rows:
+            detail = _detail_cell(
+                purpose=row["purpose"],
+                becoming=row["becoming"],
+                ended=row["date"],
+            )
+            lines.append(
+                f"| `{row['device']}` | {row['day']} | {detail} |"
             )
 
     lines.append(END_MARKER)

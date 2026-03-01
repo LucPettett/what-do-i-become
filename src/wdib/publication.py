@@ -16,6 +16,9 @@ _UUID_RE = re.compile(
 _MIXED_SECRET_RE = re.compile(r"\b(?=\w*[A-Za-z])(?=\w*\d)[A-Za-z0-9]{12,}\b")
 _UNIX_PATH_RE = re.compile(r"(?:^|[\s(`\"'])/(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9._-]+")
 _SPACES_RE = re.compile(r"\s+")
+_PAIR_EVIDENCE_RE = re.compile(r"`([^`]+)`\s*=>\s*`([^`]+)`")
+_VERB_EVIDENCE_RE = re.compile(r"`([^`]+)`\s+(?:shows?|found|reported)\s+([^;]+)", re.IGNORECASE)
+_TEMP_C_RE = re.compile(r"~\s*([0-9]+(?:\.[0-9]+)?)C", re.IGNORECASE)
 
 
 def _ordinal(day: int) -> str:
@@ -101,6 +104,96 @@ def _hardware_focus(hardware_requests: list[dict[str, Any]]) -> list[str]:
         if len(focus) >= 3:
             break
     return focus
+
+
+def _extract_summary_evidence_lines(summary_hint: str) -> list[str]:
+    raw = str(summary_hint or "").strip()
+    if not raw:
+        return []
+
+    picked: list[str] = []
+    for command, result in _PAIR_EVIDENCE_RE.findall(raw):
+        cmd = _sanitize(command, max_len=80)
+        out = _sanitize(result, max_len=120)
+        if not cmd or not out:
+            continue
+        line = f"`{cmd}` -> {out}"
+        if line not in picked:
+            picked.append(line)
+        if len(picked) >= 5:
+            return picked
+
+    for command, detail in _VERB_EVIDENCE_RE.findall(raw):
+        cmd = _sanitize(command, max_len=80)
+        out = _sanitize(detail, max_len=120)
+        if not cmd or not out:
+            continue
+        line = f"`{cmd}` -> {out}"
+        if line not in picked:
+            picked.append(line)
+        if len(picked) >= 5:
+            return picked
+    return picked
+
+
+def _system_profile_from_summary(summary_hint: str) -> str:
+    raw = str(summary_hint or "").strip()
+    lowered = raw.lower()
+    if not lowered:
+        return ""
+
+    parts: list[str] = []
+    if "raspberry pi" in lowered:
+        parts.append("I am running on Raspberry Pi hardware")
+    if "wlan0" in lowered and "up" in lowered:
+        parts.append("wlan0 is online")
+    if "0% packet loss" in lowered or "http/2 200" in lowered:
+        parts.append("outbound connectivity checks passed")
+    if "/dev/i2c" in lowered or "i2c-" in lowered:
+        parts.append("I2C buses are available")
+    if "/dev/video" in lowered or "v4l" in lowered:
+        parts.append("video device nodes are present")
+    if "arecord -l" in lowered and "no capture device" in lowered:
+        parts.append("no microphone capture device was detected")
+
+    temp_match = _TEMP_C_RE.search(raw)
+    if temp_match:
+        parts.append(f"CPU temperature is around {temp_match.group(1)}C")
+
+    if not parts:
+        return ""
+    return _sanitize("; ".join(parts) + ".", max_len=240)
+
+
+def _engineering_details(
+    summary_hint: str,
+    *,
+    completed_tasks: list[str],
+    artifacts: list[dict[str, Any]],
+) -> list[str]:
+    details: list[str] = []
+    for title in completed_tasks[:2]:
+        cleaned = _sanitize(str(title), max_len=110)
+        if cleaned:
+            details.append(f"Completed task: {cleaned}")
+
+    for line in _extract_summary_evidence_lines(summary_hint):
+        if line not in details:
+            details.append(line)
+        if len(details) >= 6:
+            return details
+
+    for item in artifacts[-3:]:
+        description = _sanitize(str(item.get("description") or ""), max_len=120)
+        if not description:
+            continue
+        artifact_line = f"Artifact: {description}"
+        if artifact_line not in details:
+            details.append(artifact_line)
+        if len(details) >= 6:
+            return details
+
+    return details
 
 
 def _safe_reflection(summary_hint: str) -> str:
@@ -236,8 +329,19 @@ def build_public_status(
     incidents = list(state.get("incidents") or [])
     state_status = str(state.get("status") or "UNKNOWN")
     terminated = state_status.upper() == "TERMINATED"
+    completed_tasks = _completed_task_titles(tasks, run_date=run_date)
     next_tasks = [] if terminated else _next_task_titles(tasks)
     hardware_focus = [] if terminated else _hardware_focus(hardware_requests)
+    system_profile = "" if terminated else _system_profile_from_summary(summary_hint)
+    engineering_details = (
+        []
+        if terminated
+        else _engineering_details(
+            summary_hint,
+            completed_tasks=completed_tasks,
+            artifacts=list(state.get("artifacts") or []),
+        )
+    )
     self_observation = (
         "I received a human termination command and gracefully closed this chapter."
         if terminated
@@ -257,9 +361,11 @@ def build_public_status(
         "purpose": _extract_spirit_purpose(spirit_text) or "Unset (add a mission in SPIRIT.md).",
         "becoming": _sanitize(str((state.get("purpose") or {}).get("becoming") or "")),
         "recent_activity": _recent_activity(summary_hint, objective_hint),
-        "completed_tasks": _completed_task_titles(tasks, run_date=run_date),
+        "system_profile": system_profile,
+        "completed_tasks": completed_tasks,
         "next_tasks": next_tasks,
         "hardware_focus": hardware_focus,
+        "engineering_details": engineering_details,
         "self_observation": self_observation,
         "counts": {
             "tasks": {

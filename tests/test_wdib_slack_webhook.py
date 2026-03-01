@@ -27,6 +27,10 @@ class SlackWebhookFormattingTests(unittest.TestCase):
             "becoming": "Improve hotspot detection and daily clean-up guidance.",
             "recent_activity": "Inspected local shoreline signals and drafted next tasks.",
             "completed_tasks": ["Collect baseline observations"],
+            "engineering_details": [
+                "`python3 --version` -> Python 3.13.5",
+                "`pytest -q` -> 12 passed",
+            ],
             "next_tasks": [
                 "Improve hotspot detection confidence.",
                 "Refine daily clean-up recommendation wording.",
@@ -46,12 +50,14 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertIn("Completed: Collect baseline observations", text)
         self.assertIn("*What I'm thinking*", text)
         self.assertIn("*Engineering notes*", text)
+        self.assertIn("`python3 --version` -> Python 3.13.5", text)
         self.assertIn("*What's next*", text)
+        self.assertIn("• Improve hotspot detection confidence.", text)
         self.assertIn("Published today's public update to GitHub.", text)
         self.assertNotIn("Cycle:", text)
         self.assertNotIn("Status:", text)
         self.assertNotIn("Privacy:", text)
-        self.assertNotIn("•", text)
+        self.assertIn("•", text)
 
     def test_human_awakening_message_has_awoke_header(self) -> None:
         status_payload = {
@@ -62,7 +68,9 @@ class SlackWebhookFormattingTests(unittest.TestCase):
             "cycle_id": "cycle-001-20260301T112400",
             "purpose": "Help clean local beaches by reducing litter hotspots.",
             "becoming": "Improve hotspot detection and daily clean-up guidance.",
+            "system_profile": "wlan0 is online; outbound connectivity checks passed; I2C buses are available.",
             "recent_activity": "Inspected local shoreline signals and drafted next tasks.",
+            "engineering_details": ["`ip -brief addr` -> wlan0 UP [redacted-ip]/24"],
             "next_tasks": ["Improve hotspot detection confidence."],
             "counts": {
                 "tasks": {"todo": 1, "in_progress": 0, "done": 0, "blocked": 0},
@@ -75,9 +83,12 @@ class SlackWebhookFormattingTests(unittest.TestCase):
 
         self.assertIn("I awoke and", text)
         self.assertIn(":sunrise:", text)
-        self.assertIn("Grounded myself in this mission", text)
-        self.assertIn("Set my first becoming step", text)
-        self.assertNotIn("•", text)
+        self.assertIn("Explored myself.", text)
+        self.assertIn("I've reviewed my spirit", text)
+        self.assertIn("What's next:", text)
+        self.assertIn("• Improve hotspot detection confidence.", text)
+        self.assertIn("Engineering details:", text)
+        self.assertIn("•", text)
 
     def test_human_terminate_message_is_distinct(self) -> None:
         status_payload = {

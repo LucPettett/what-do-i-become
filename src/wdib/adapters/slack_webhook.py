@@ -134,40 +134,65 @@ def _engineering_breakdown_line(status_payload: dict[str, Any]) -> str:
     return ". ".join(parts) + "."
 
 
+def _engineering_detail_lines(status_payload: dict[str, Any]) -> list[str]:
+    details = [
+        str(item).strip()
+        for item in list(status_payload.get("engineering_details") or [])
+        if str(item).strip()
+    ]
+    if details:
+        return details[:5]
+    return [_engineering_breakdown_line(status_payload)]
+
+
+def _bullet_lines(items: list[str], *, fallback: str) -> list[str]:
+    cleaned = [str(item).strip() for item in items if str(item).strip()]
+    if not cleaned:
+        cleaned = [fallback]
+    return [f"• {item}" for item in cleaned[:3]]
+
+
 def _build_awakening_text(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
     purpose = str(status_payload.get("purpose") or "").strip()
     becoming = str(status_payload.get("becoming") or "").strip()
     recent_activity = str(status_payload.get("recent_activity") or "").strip()
+    system_profile = str(status_payload.get("system_profile") or "").strip()
+    self_observation = str(status_payload.get("self_observation") or "").strip()
     next_tasks = [
         str(item).strip()
         for item in list(status_payload.get("next_tasks") or [])
-        if str(item).strip()
-    ]
-    hardware_focus = [
-        str(item).strip()
-        for item in list(status_payload.get("hardware_focus") or [])
         if str(item).strip()
     ]
     pushed = bool(git_info.get("pushed"))
 
     lines = [f"{_awakening_icon_emoji()} *{_human_date(run_date)}, I awoke and:*"]
     lines.append("")
-    if purpose:
-        lines.append(f"Grounded myself in this mission: {purpose}")
-    if becoming:
-        lines.append(f"Set my first becoming step: {becoming}")
-    if recent_activity:
-        lines.append(f"Started with: {recent_activity}")
-    if next_tasks:
-        lines.append(f"What's next: {next_tasks[0]}")
-        for task_title in next_tasks[1:3]:
-            lines.append(f"Then: {task_title}")
-    elif hardware_focus:
-        lines.append(f"First hardware focus: {hardware_focus[0]}")
+    if system_profile:
+        lines.append(f"Explored myself. {system_profile}")
     else:
-        lines.append("What's next: Continue local inspection and propose the first concrete task.")
+        lines.append("Explored myself and mapped my local hardware/software baseline.")
+    if recent_activity:
+        lines.append(f"What I did: {recent_activity}")
+    if becoming:
+        lines.append(f"I've reviewed my spirit: {becoming}")
+    elif purpose:
+        lines.append(f"I've reviewed my spirit: {purpose}")
+    if self_observation:
+        lines.append(f"What I learned about myself: {self_observation}")
 
-    lines.append(f"Engineering: {_engineering_breakdown_line(status_payload)}")
+    lines.append("")
+    lines.append("What's next:")
+    lines.extend(
+        _bullet_lines(
+            next_tasks,
+            fallback="Continue local inspection and propose the first concrete task.",
+        )
+    )
+
+    lines.append("")
+    lines.append("Engineering details:")
+    lines.extend(_engineering_detail_lines(status_payload))
+    lines.append(_engineering_breakdown_line(status_payload))
     if pushed:
         lines.append("Published: Pushed my first public update to GitHub.")
     else:
@@ -203,9 +228,9 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
 
     lines.append("*What I did*")
     if recent_activity:
-        lines.append(recent_activity)
+        lines.append(f"What I did: {recent_activity}")
     else:
-        lines.append("Kept momentum on mission-aligned tasks.")
+        lines.append("What I did: Kept momentum on mission-aligned tasks.")
     for task_title in completed_tasks[:2]:
         lines.append(f"Completed: {task_title}")
     if hardware_focus:
@@ -222,6 +247,7 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
 
     lines.append("")
     lines.append("*Engineering notes*")
+    lines.extend(_engineering_detail_lines(status_payload))
     lines.append(_engineering_breakdown_line(status_payload))
     if pushed:
         lines.append("Published today's public update to GitHub.")
@@ -231,8 +257,7 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
     if next_tasks:
         lines.append("")
         lines.append("*What's next*")
-        for task_title in next_tasks[:3]:
-            lines.append(task_title)
+        lines.extend(_bullet_lines(next_tasks, fallback="Continue with current in-progress work."))
     return "\n".join(lines)
 
 

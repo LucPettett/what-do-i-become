@@ -58,6 +58,38 @@ class PublicationTests(unittest.TestCase):
             ["Map beach litter hotspots", "Improve confidence scoring"],
         )
         self.assertEqual(payload["completed_tasks"], ["Collect baseline observations"])
+        self.assertIn("Completed task: Collect baseline observations", payload["engineering_details"])
+
+    def test_build_public_status_extracts_system_profile_and_evidence(self) -> None:
+        now = datetime(2026, 3, 1, 9, 0, 0)
+        state = {
+            "awoke_on": "2026-03-01",
+            "status": "ACTIVE",
+            "purpose": {"becoming": "Map local conditions for daily human briefings."},
+            "tasks": [],
+            "hardware_requests": [],
+            "incidents": [],
+            "artifacts": [],
+        }
+        payload = build_public_status(
+            device_id="aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            cycle_id="cycle-001-20260301T090000",
+            day=1,
+            state=state,
+            worker_status="COMPLETED",
+            summary_hint=(
+                "Local context inspection completed with machine evidence: "
+                "`ip -brief addr` => `wlan0 UP 192.168.1.159/24`; "
+                "`ping -c 1 1.1.1.1` => `1 received, 0% packet loss`; "
+                "`ls -l /dev/i2c*` shows i2c-1/13/14 available."
+            ),
+            now=now,
+        )
+
+        self.assertIn("wlan0 is online", payload["system_profile"])
+        self.assertIn("connectivity checks passed", payload["system_profile"])
+        self.assertTrue(payload["engineering_details"])
+        self.assertIn("`ip -brief addr`", payload["engineering_details"][0])
 
     def test_daily_summary_redacts_paths_and_skips_technical_reflection(self) -> None:
         now = datetime(2026, 3, 1, 9, 0, 0)

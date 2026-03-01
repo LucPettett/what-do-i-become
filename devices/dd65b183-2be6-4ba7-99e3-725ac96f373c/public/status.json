@@ -1,0 +1,36 @@
+{
+  "becoming": "",
+  "completed_tasks": [],
+  "counts": {
+    "hardware_requests": {
+      "detected": 0,
+      "failed": 0,
+      "open": 0,
+      "verified": 0
+    },
+    "incidents_open": 0,
+    "tasks": {
+      "blocked": 0,
+      "done": 0,
+      "in_progress": 0,
+      "todo": 0
+    }
+  },
+  "cycle_id": "setup-000",
+  "date": "2026-03-01",
+  "day": 0,
+  "device_id_short": "dd65b183",
+  "engineering_details": [],
+  "first_awoke_on": "2026-03-01",
+  "hardware_focus": [],
+  "next_tasks": [],
+  "public_notice": "Sanitized publication only. Detailed logs remain on-device.",
+  "purpose": "You are becoming a dashboard for a human.",
+  "recent_activity": "Initial setup complete.",
+  "schema_version": "1.0",
+  "self_observation": "I am still mapping my environment and defining the next meaningful step.",
+  "status": "ACTIVE",
+  "system_profile": "",
+  "updated_at": "2026-03-01T02:47:03",
+  "worker_status": "SETUP"
+}

@@ -14,9 +14,9 @@ An autonomous hardware and software framework that extends itself, one hardware 
 
 **You are the agent. You install the hardware.**
 
-With no configuration: `what-do-i-become` could become anything.
-
 With a Spirit file, `what-do-i-become` becomes whatever you want it to become.
+
+Without a Spirit, `what-do-i-become` could become anything.
 
 As it evolves, WDIB will keep constructing its own software, becoming more autonomous while pursuing a single purpose.
 

@@ -46,21 +46,16 @@ export DEVICE_IP="<device_ip>"
 export OPENAI_API_KEY="<openai_api_key>"
 export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
 
-cat > ./spirit.md <<'SPIRIT'
-## Mission
-You are determined to help clean up the beach of small-scale human rubbish.
-Your role is to become excellent at spotting, tracking, and reducing litter in the local beach environment.
-
-## Rules
-- Prioritize high-impact clean-up opportunities.
-- Keep public summaries high-level.
-- Keep detailed diagnostics local on the device.
-SPIRIT
-
-codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./spirit.md, run one tick, and report blockers only. Never echo full secrets."
+codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./src/SPIRIT.beach-cleanup.example.md, run one tick, and report blockers only. Never echo full secrets."
 ```
 
-You can alter `spirit.md` to steer the mission, for example:
+If you want to customize mission text, copy and edit the bundled preset:
+
+```bash
+cp ./src/SPIRIT.beach-cleanup.example.md ./spirit.md
+```
+
+Example custom mission:
 
 ```markdown
 You are becoming a dashboard for a human.

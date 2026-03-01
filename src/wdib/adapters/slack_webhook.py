@@ -89,12 +89,6 @@ def _cycle_icon_emoji(status_payload: dict[str, Any]) -> str | None:
     return _update_icon_emoji()
 
 
-def _pluralize(count: int, singular: str, plural: str | None = None) -> str:
-    if count == 1:
-        return singular
-    return plural or f"{singular}s"
-
-
 def _pick_message_type(status_payload: dict[str, Any]) -> str:
     status = str(status_payload.get("status") or "").upper()
     worker_status = str(status_payload.get("worker_status") or "").upper()
@@ -110,39 +104,13 @@ def _pick_message_type(status_payload: dict[str, Any]) -> str:
     return "update"
 
 
-def _engineering_breakdown_line(status_payload: dict[str, Any]) -> str:
-    counts = status_payload.get("counts") or {}
-    task_counts = counts.get("tasks") or {}
-    hardware_counts = counts.get("hardware_requests") or {}
-    incidents_open = int(counts.get("incidents_open") or 0)
-
-    todo = int(task_counts.get("todo") or 0)
-    in_progress = int(task_counts.get("in_progress") or 0)
-    done = int(task_counts.get("done") or 0)
-    blocked = int(task_counts.get("blocked") or 0)
-    waiting_hardware = int(hardware_counts.get("open") or 0) + int(hardware_counts.get("detected") or 0)
-
-    parts: list[str] = [
-        f"Tasks moved: {done} done, {in_progress} in progress, {todo} queued, {blocked} blocked"
-    ]
-    if waiting_hardware:
-        parts.append(
-            f"Hardware queue: {waiting_hardware} {_pluralize(waiting_hardware, 'item')} awaiting verification"
-        )
-    if incidents_open:
-        parts.append(f"Incidents: {incidents_open} open")
-    return ". ".join(parts) + "."
-
-
 def _engineering_detail_lines(status_payload: dict[str, Any]) -> list[str]:
     details = [
         str(item).strip()
         for item in list(status_payload.get("engineering_details") or [])
         if str(item).strip()
     ]
-    if details:
-        return details[:5]
-    return [_engineering_breakdown_line(status_payload)]
+    return details[:5]
 
 
 def _bullet_lines(items: list[str], *, fallback: str) -> list[str]:
@@ -163,8 +131,6 @@ def _build_awakening_text(status_payload: dict[str, Any], git_info: dict[str, An
         for item in list(status_payload.get("next_tasks") or [])
         if str(item).strip()
     ]
-    pushed = bool(git_info.get("pushed"))
-
     lines = [f"{_awakening_icon_emoji()} *{_human_date(run_date)}, I awoke and:*"]
     lines.append("")
     if system_profile:
@@ -189,14 +155,11 @@ def _build_awakening_text(status_payload: dict[str, Any], git_info: dict[str, An
         )
     )
 
-    lines.append("")
-    lines.append("Engineering details:")
-    lines.extend(_engineering_detail_lines(status_payload))
-    lines.append(_engineering_breakdown_line(status_payload))
-    if pushed:
-        lines.append("Published: Pushed my first public update to GitHub.")
-    else:
-        lines.append("Published: Saved my first public update locally; Git push is still pending.")
+    details = _engineering_detail_lines(status_payload)
+    if details:
+        lines.append("")
+        lines.append("Engineering details:")
+        lines.extend(details)
     return "\n".join(lines)
 
 
@@ -220,8 +183,6 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
         for item in list(status_payload.get("hardware_focus") or [])
         if str(item).strip()
     ]
-    pushed = bool(git_info.get("pushed"))
-
     cycle_id = str(status_payload.get("cycle_id") or "-")
     lines = [f"{_update_icon_emoji()} *{_human_date(run_date)} journal, cycle `{cycle_id}`*"]
     lines.append("")
@@ -245,14 +206,11 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
     if self_observation:
         lines.append(f"Reflection: {self_observation}")
 
-    lines.append("")
-    lines.append("*Engineering notes*")
-    lines.extend(_engineering_detail_lines(status_payload))
-    lines.append(_engineering_breakdown_line(status_payload))
-    if pushed:
-        lines.append("Published today's public update to GitHub.")
-    else:
-        lines.append("Saved today's public update locally; Git push is still pending.")
+    details = _engineering_detail_lines(status_payload)
+    if details:
+        lines.append("")
+        lines.append("*Engineering notes*")
+        lines.extend(details)
 
     if next_tasks:
         lines.append("")

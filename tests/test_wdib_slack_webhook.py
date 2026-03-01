@@ -53,7 +53,8 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertIn("`python3 --version` -> Python 3.13.5", text)
         self.assertIn("*What's next*", text)
         self.assertIn("• Improve hotspot detection confidence.", text)
-        self.assertIn("Published today's public update to GitHub.", text)
+        self.assertNotIn("Published today's public update", text)
+        self.assertNotIn("Tasks moved:", text)
         self.assertNotIn("Cycle:", text)
         self.assertNotIn("Status:", text)
         self.assertNotIn("Privacy:", text)
@@ -88,6 +89,8 @@ class SlackWebhookFormattingTests(unittest.TestCase):
         self.assertIn("What's next:", text)
         self.assertIn("• Improve hotspot detection confidence.", text)
         self.assertIn("Engineering details:", text)
+        self.assertNotIn("Tasks moved:", text)
+        self.assertNotIn("Published:", text)
         self.assertIn("•", text)
 
     def test_human_terminate_message_is_distinct(self) -> None:

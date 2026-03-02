@@ -1,0 +1,10 @@
+{
+  "cycle_id": "cycle-003-20260301T141405",
+  "date": "2026-03-01",
+  "day": 3,
+  "status": "TERMINATED",
+  "summary": "Received human termination instruction and gracefully ended this run. Goodbye for now.",
+  "work_order_path": "",
+  "worker_result_path": "",
+  "worker_status": "TERMINATED"
+}

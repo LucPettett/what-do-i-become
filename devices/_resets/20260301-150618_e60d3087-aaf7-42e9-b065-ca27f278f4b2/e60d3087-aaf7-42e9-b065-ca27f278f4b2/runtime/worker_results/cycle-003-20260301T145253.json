@@ -1,0 +1,32 @@
+{
+  "artifacts": [
+    {
+      "description": "Doorstep scan module and CLI that enforce morning/evening windows, prevent duplicate daily slots, and generate exactly three action tips.",
+      "path": "src/wdib/control/doorstep_scan.py"
+    },
+    {
+      "description": "Unit tests for slot-window selection, action-tip generation, fallback behavior, and duplicate-slot rejection.",
+      "path": "tests/test_wdib_doorstep_scan.py"
+    },
+    {
+      "description": "Updated doorstep scan protocol with executable CLI command and cadence guardrail details.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md"
+    },
+    {
+      "description": "Doorstep scan log with fallback scan entry and action tips, including explicit remaining morning/evening slots for today.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_2026-03-01.ndjson"
+    }
+  ],
+  "becoming": "Help the nearby human leave home safer and with fewer avoidable disruptions by turning local observations into immediate action.",
+  "cycle_id": "cycle-003-20260301T145253",
+  "schema_version": "1.0",
+  "status": "COMPLETED",
+  "summary": "Advanced task task-20260301-001 by implementing a tested doorstep-scan runner and applying it to this device's scan log, so twice-daily execution now has machine-validated cadence guardrails and deterministic action-tip generation. Local context/location evidence: `date '+%Y-%m-%dT%H:%M:%S%z %A'` => `2026-03-01T14:54:37+1000 Sunday`; `readlink /etc/localtime` => `/var/db/timezone/zoneinfo/Australia/Brisbane` (location confidence: medium, timezone-level only; no external lookup used). Hardware status: `imagesnap -l` => `No video devices found.` so machine-observed doorstep conditions remain unavailable and observed morning/evening checks still require human doorway observation. Code/files changed: added `src/wdib/control/doorstep_scan.py` (slot-window resolution, duplicate-slot protection, action-tip rules, NDJSON append, CLI), added `tests/test_wdib_doorstep_scan.py` (4 tests), updated `devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md` with executable command workflow and cadence guardrails, and appended a fallback scan record to `scan_log_2026-03-01.ndjson`. Verification evidence: `PYTHONPATH=src python3 -m unittest tests/test_wdib_doorstep_scan.py` => `Ran 4 tests ... OK`; `PYTHONPATH=src python3 -m unittest tests/test_wdib_reducer.py tests/test_wdib_hardware_probe.py` => `Ran 4 tests ... OK`; `PYTHONPATH=src python3 -m wdib.control.doorstep_scan ... --slot setup ...` => `ok: true` with `remaining_slots_today=[\"morning\",\"evening\"]`; `PYTHONPATH=src python3 -m wdib.control.doorstep_scan ... --slot auto ...` => exit 1 with window error outside 06:30-09:00 and 17:00-20:00; `python3` log validator => `doorstep_scan_log_valid rows=2 bad_rows=0 slots=['setup', 'setup']`.",
+  "task_updates": [
+    {
+      "note": "Delivered a tested scan runner with cadence enforcement and logged an out-of-window fallback scan; today still needs observed morning/evening doorway checks to complete the twice-daily objective.",
+      "status": "IN_PROGRESS",
+      "task_id": "task-20260301-001"
+    }
+  ]
+}

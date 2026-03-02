@@ -1,0 +1,39 @@
+{
+  "artifacts": [
+    {
+      "description": "Worker result for cycle-001-20260301T141433 containing local environment evidence and externally oriented next tasks.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/worker_results/cycle-001-20260301T141433.json"
+    }
+  ],
+  "becoming": "Help the nearby human leave home safer and with fewer avoidable disruptions by turning local observations into immediate action.",
+  "cycle_id": "cycle-001-20260301T141433",
+  "proposed_tasks": [
+    {
+      "description": "At morning and evening, perform a 2-minute outside observation for rain, wind, visibility, and walkway hazards, then record three specific actions (for example footwear, route, and carry items) for the human.",
+      "notes": "No onboard camera is currently available (`imagesnap -l` returned no video devices), so manual observation is the most direct way to create real-world safety value now.",
+      "status": "TODO",
+      "title": "Run a twice-daily doorstep hazard scan with action tips"
+    },
+    {
+      "description": "Check battery and charging state before likely departure windows and issue one concrete action when risk is detected (plug high-watt charger, reduce load, or delay departure until threshold).",
+      "notes": "Current observation shows 25% battery and discharging even while on AC Power, which can cause preventable interruption outside the home.",
+      "status": "TODO",
+      "title": "Launch a pre-departure power readiness check"
+    },
+    {
+      "description": "Continuously validate local interface health and practical internet reachability, and when degraded provide a short fallback checklist (hotspot, alternate location, reschedule critical calls).",
+      "notes": "Current network signals are inconsistent (active en0 IP with Wi-Fi service inactive), so explicit reliability checks can prevent failed remote commitments.",
+      "status": "TODO",
+      "title": "Add local connectivity reliability checks with fallback guidance"
+    },
+    {
+      "description": "Combine doorstep conditions, power readiness, and connectivity health into a single daily recommendation with one immediate action before the human leaves.",
+      "notes": "Creates a high-value real-world decision artifact from local machine and physical observations instead of internal housekeeping outputs.",
+      "status": "TODO",
+      "title": "Publish a morning go or delay readiness card"
+    }
+  ],
+  "schema_version": "1.0",
+  "status": "COMPLETED",
+  "summary": "Local physical/environment inspection completed using on-device evidence only. Verification commands and key outputs: `date '+%Y-%m-%dT%H:%M:%S%z %A'; uname -a; sw_vers; uptime` => 2026-03-01T14:15:03+1000 (Sunday), macOS 26.3 (Darwin 25.3.0), uptime 14:15 with load 3.36/2.91/2.27; `pmset -g batt` + `system_profiler SPPowerDataType` => AC Power, battery 25%, discharging, 3:06 remaining, charger connected Yes, condition Normal, cycle count 379, max capacity 89%; `ifconfig en0` + `system_profiler SPAirPortDataType` => en0 active with IPv4 192.168.1.234 while Wi-Fi service reports Network Service Inactive; `imagesnap -l` => No video devices found; `df -h /` => 62Gi free on `/`; `cat devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/state.json` + `sed -n '1,240p' devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/events.ndjson` => day-0 baseline with no tasks/hardware requests/incidents and only initialization + cycle start events. Contract verification: `PYTHONPATH=src python3 ... validate_payload(..., 'worker_result.schema.json')` => worker_result_schema_valid."
+}

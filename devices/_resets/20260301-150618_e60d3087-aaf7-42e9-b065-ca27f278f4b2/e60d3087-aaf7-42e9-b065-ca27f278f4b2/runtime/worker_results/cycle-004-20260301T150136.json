@@ -1,0 +1,28 @@
+{
+  "artifacts": [
+    {
+      "description": "Doorstep scan cadence-status API and CLI status-only mode for due/overdue/next-slot visibility.",
+      "path": "src/wdib/control/doorstep_scan.py"
+    },
+    {
+      "description": "Unit tests covering cadence status transitions, day-complete behavior, and non-writing status-only CLI output.",
+      "path": "tests/test_wdib_doorstep_scan.py"
+    },
+    {
+      "description": "Updated doorstep scan runbook with status-only command and explicit interpretation for missed or due slots.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md"
+    }
+  ],
+  "becoming": "Help the nearby human leave home safer and with fewer avoidable disruptions by turning local observations into immediate action.",
+  "cycle_id": "cycle-004-20260301T150136",
+  "schema_version": "1.0",
+  "status": "COMPLETED",
+  "summary": "Advanced task task-20260301-001 by adding cadence-state reporting for the doorstep scan workflow, so twice-daily execution now exposes due-now/overdue/next-slot signals without writing fake observations. Local context/location evidence: `date '+%Y-%m-%dT%H:%M:%S%z %A'` => `2026-03-01T15:03:56+1000 Sunday`; `readlink /etc/localtime` => `/var/db/timezone/zoneinfo/Australia/Brisbane` (location confidence: medium, timezone-level only). Hardware dependency status: `imagesnap -l` => `No video devices found.` so machine-observed doorstep sensing remains unavailable. Code/files changed: updated `src/wdib/control/doorstep_scan.py` with new `cadence_status(...)`, `--status-only` CLI mode, and cadence status in normal run output; expanded `tests/test_wdib_doorstep_scan.py` with cadence-state and status-only tests; updated `devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md` with status command and interpretation rules. Verification evidence: `PYTHONPATH=src python3 -m unittest tests/test_wdib_doorstep_scan.py tests/test_wdib_reducer.py tests/test_wdib_hardware_probe.py` => `Ran 11 tests ... OK`; `PYTHONPATH=src python3 -m wdib.control.doorstep_scan --log-path devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_$(date +%F).ndjson --status-only` => `remaining_slots_today=[\"morning\",\"evening\"]`, `overdue_slots_today=[\"morning\"]`, `next_slot=\"evening\"`; `PYTHONPATH=src python3 -m wdib.control.doorstep_scan --log-path devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_2026-03-01.ndjson --status-only --now 2026-03-01T18:10:00+10:00` => `should_scan_now=true`, `current_window_slot=\"evening\"`; worker-result contract validated via `PYTHONPATH=src python3 ... validate_payload(..., \"worker_result.schema.json\")` => `worker_result_schema_valid`.",
+  "task_updates": [
+    {
+      "note": "Cadence visibility is now machine-validated (`should_scan_now`, `overdue_slots_today`, `next_slot`); current status shows morning missed and evening due in 17:00-20:00, so the next high-value step is an observed evening doorway scan entry with real conditions.",
+      "status": "IN_PROGRESS",
+      "task_id": "task-20260301-001"
+    }
+  ]
+}

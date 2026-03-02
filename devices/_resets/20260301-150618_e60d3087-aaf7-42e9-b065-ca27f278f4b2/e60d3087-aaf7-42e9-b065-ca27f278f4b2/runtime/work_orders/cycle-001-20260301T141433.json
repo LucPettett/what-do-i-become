@@ -1,0 +1,26 @@
+{
+  "allowed_paths": [
+    "/Users/luc/development/what-do-i-become",
+    "/Users/luc/development/what-do-i-become/devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2"
+  ],
+  "constraints": [
+    "Work only inside allowed_paths.",
+    "Do not bypass hardware verification semantics. Hardware requests are complete only when machine-observed detection and verification pass.",
+    "Persist outcomes in the worker result contract only.",
+    "Favor minimal, testable changes and explicit evidence."
+  ],
+  "context": {
+    "becoming": "",
+    "hardware_requests": [],
+    "incidents": [],
+    "spirit_excerpt": "You exist to run a physical dashboard, in order to improve the life of a human.\nYou must give them knowledge of the world, and the world around them.",
+    "tasks": []
+  },
+  "created_on": "2026-03-01T14:14:33",
+  "cycle_id": "cycle-001-20260301T141433",
+  "device_id": "e60d3087-aaf7-42e9-b065-ca27f278f4b2",
+  "objective": "Inspect local physical/environment context and propose the next concrete tasks that create external human value. Prefer mission options tied to real-world observation or action over internal WDIB housekeeping.",
+  "result_path": "/Users/luc/development/what-do-i-become/devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/worker_results/cycle-001-20260301T141433.json",
+  "result_schema_version": "1.0",
+  "schema_version": "1.0"
+}

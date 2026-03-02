@@ -98,6 +98,28 @@ def _pick_message_type(status_payload: dict[str, Any]) -> str:
     return "update"
 
 
+def _day_number(status_payload: dict[str, Any]) -> int:
+    try:
+        day = int(status_payload.get("day") or 0)
+    except (TypeError, ValueError):
+        return 0
+    return max(0, day)
+
+
+def _cycle_heading(status_payload: dict[str, Any], run_date: str) -> str:
+    message_type = _pick_message_type(status_payload)
+    if message_type == "terminate":
+        return ""
+
+    day = _day_number(status_payload)
+    day_label = f"DAY {day}" if day > 0 else "DAY ?"
+    if message_type == "awakening":
+        day_label = f"{day_label}: Awakening"
+
+    icon = _awakening_icon_emoji() if message_type == "awakening" else _update_icon_emoji()
+    return f"{icon} *{_human_date(run_date)}: {day_label}*"
+
+
 def _engineering_detail_lines(status_payload: dict[str, Any]) -> list[str]:
     details = [
         str(item).strip()
@@ -125,7 +147,7 @@ def _build_awakening_text(status_payload: dict[str, Any], git_info: dict[str, An
         for item in list(status_payload.get("next_tasks") or [])
         if str(item).strip()
     ]
-    lines = [f"{_awakening_icon_emoji()} *{_human_date(run_date)}, I awoke and:*"]
+    lines = [_cycle_heading(status_payload, run_date)]
     lines.append("")
     if system_profile:
         lines.append(f"Explored myself. {system_profile}")
@@ -134,9 +156,9 @@ def _build_awakening_text(status_payload: dict[str, Any], git_info: dict[str, An
     if recent_activity:
         lines.append(f"What I did: {recent_activity}")
     if becoming:
-        lines.append(f"I've reviewed my spirit: {becoming}")
+        lines.append(f"I've reviewed my mission: {becoming}")
     elif purpose:
-        lines.append(f"I've reviewed my spirit: {purpose}")
+        lines.append(f"I've reviewed my mission: {purpose}")
     if self_observation:
         lines.append(f"What I learned about myself: {self_observation}")
 
@@ -177,8 +199,7 @@ def _build_update_text(status_payload: dict[str, Any], git_info: dict[str, Any],
         for item in list(status_payload.get("hardware_focus") or [])
         if str(item).strip()
     ]
-    cycle_id = str(status_payload.get("cycle_id") or "-")
-    lines = [f"{_update_icon_emoji()} *{_human_date(run_date)} journal, cycle `{cycle_id}`*"]
+    lines = [_cycle_heading(status_payload, run_date)]
     lines.append("")
 
     lines.append("*What I did*")
@@ -340,17 +361,24 @@ def _build_cycle_text_llm(status_payload: dict[str, Any], git_info: dict[str, An
         return None
 
     system_prompt = (
-        "You write WDIB Slack updates for one cycle.\n"
+        "You are an expert at communicating your tasks for the day.\n"
+        "You will be given facts for one autonomous engineering cycle and must produce a world-class Slack update.\n"
+        "You are writing an engineering journal focused on the software and hardware you build, and will build.\n"
+        "Core task:\n"
+        "- Provide an update focused on what you just completed.\n"
+        "- Explain your thinking in relation to your core purpose.\n"
+        "- Describe your recent work with concrete technical details; include command/tool evidence and code/artifact details when present.\n"
+        "- Include your state of mind with emotional intelligence grounded in your mission and ambitions.\n"
+        "- Finish with upcoming tasks.\n"
+        "Style:\n"
+        "- Be concise where possible: short lists, notes, and direct language.\n"
         "Rules:\n"
         "1) Use only facts from the provided JSON context.\n"
-        "2) Keep first-person voice ('I'). Be concrete, not generic.\n"
-        "3) Start with two lines exactly in this shape: 'Device: ...' and 'Purpose: ...'.\n"
-        "4) Keep it short: 80-220 words.\n"
-        "5) Use Slack-friendly Markdown and bullets where helpful.\n"
-        "6) Use Slack mrkdwn syntax. For bold use *text* (never **text**).\n"
-        "7) Never write '(unspecified)' or '(not specified)' for Device/Purpose.\n"
-        "8) Never mention internal filenames, schema names, secrets, IPs, tokens, or local paths.\n"
-        "9) If message_type is 'terminate', write a graceful closing note.\n"
+        "2) Keep first-person voice ('I'). Be concrete, technical, and specific.\n"
+        "3) Keep it concise but detailed: 140-320 words.\n"
+        "4) Use Slack mrkdwn syntax. For bold use *text* (never **text**).\n"
+        "5) Never mention internal schema names, secrets, IPs, tokens, or local paths.\n"
+        "6) If message_type is 'terminate', write a graceful closing note that reflects on your full lifecycle because this is your final message.\n"
         "Return strict JSON with one key: text."
     )
     context = _llm_prompt_context(status_payload, git_info, run_date)
@@ -404,6 +432,9 @@ def _build_cycle_text_llm(status_payload: dict[str, Any], git_info: dict[str, An
 def _build_cycle_text(status_payload: dict[str, Any], git_info: dict[str, Any], run_date: str) -> str:
     llm_text = _build_cycle_text_llm(status_payload, git_info, run_date)
     if llm_text:
+        heading = _cycle_heading(status_payload, run_date)
+        if heading:
+            return f"{heading}\n\n{llm_text}"
         return llm_text
     return _build_cycle_text_human(status_payload, git_info, run_date)
 

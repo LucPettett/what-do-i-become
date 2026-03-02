@@ -1,0 +1,11 @@
+{"cycle_id": "cycle-001-20260301T131405", "day": 1, "status": "ACTIVE", "ts": "2026-03-01T13:14:05", "type": "CYCLE_STARTED"}
+{"cycle_id": "cycle-001-20260301T131405", "mode": "live", "returncode": 0, "ts": "2026-03-01T13:16:17", "type": "WORKER_EXECUTED"}
+{"cycle_id": "cycle-001-20260301T131405", "task_id": "task-20260301-001", "title": "Run a twice-daily doorstep observation and action brief", "ts": "2026-03-01T13:16:17", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T131405", "task_id": "task-20260301-002", "title": "Start local connectivity outage alerts for schedule protection", "ts": "2026-03-01T13:16:17", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T131405", "task_id": "task-20260301-003", "title": "Add charging-risk alert tied to real battery behavior", "ts": "2026-03-01T13:16:17", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T131405", "task_id": "task-20260301-004", "title": "Publish a morning departure readiness card", "ts": "2026-03-01T13:16:17", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T131405", "from": "", "to": "Deliver a twice-daily local readiness brief that helps a nearby human make safer, faster day-to-day decisions from observed conditions.", "ts": "2026-03-01T13:16:17", "type": "BECOMING_UPDATED"}
+{"message": "terminate and say goodbye", "ts": "2026-03-01T13:28:33", "type": "HUMAN_MESSAGE_RECEIVED"}
+{"cycle_id": "cycle-002-20260301T132833", "day": 2, "status": "ACTIVE", "ts": "2026-03-01T13:28:33", "type": "CYCLE_STARTED"}
+{"cycle_id": "cycle-002-20260301T132833", "day": 2, "message": "terminate and say goodbye", "ts": "2026-03-01T13:28:33", "type": "HUMAN_COMMAND_TERMINATE"}
+{"cycle_id": "cycle-002-20260301T132833", "day": 2, "git": {"committed": false, "message": "Skipped git commit because WDIB_SKIP_GIT_COMMIT=true.", "pushed": false}, "status": "TERMINATED", "ts": "2026-03-01T13:28:33", "type": "CYCLE_COMPLETED"}

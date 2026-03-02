@@ -12,10 +12,10 @@ from .control.hardware import probe_hardware_requests
 from .control.human_messages import is_terminate_command, load_and_clear_human_message
 from .control.planner import plan_work_order
 from .control.reducer import apply_worker_result
-from .control.spirit import load_spirit_text
+from .control.mission import load_mission_text
 from .env import load_dotenv, resolve_device_id
 from .notifications.router import send_cycle_notifications, send_failure_notifications
-from .paths import PROJECT_ROOT, SPIRIT_FILE
+from .paths import PROJECT_ROOT, MISSION_FILE
 from .policy.safety import codex_timeout_seconds, command_timeout_seconds
 from .publication import build_public_daily_summary, build_public_status
 from .storage.repository import (
@@ -83,6 +83,8 @@ _META_BECOMING_MARKERS = (
     "autonomous loop",
 )
 
+_MISSION_DISCOVERY_MIN_DAY_FOR_BECOMING = 3
+
 
 def _looks_framework_internal_becoming(text: str) -> bool:
     value = str(text or "").strip().lower()
@@ -91,39 +93,80 @@ def _looks_framework_internal_becoming(text: str) -> bool:
     return any(marker in value for marker in _META_BECOMING_MARKERS)
 
 
-def _clear_framework_becoming_from_state_when_spirit_empty(
+def _clear_becoming_from_state_when_mission_unknown(
     state: dict[str, Any],
     *,
-    spirit_text: str,
+    mission_text: str,
 ) -> dict[str, Any] | None:
-    if str(spirit_text or "").strip():
+    if str(mission_text or "").strip():
         return None
     existing = str(state.get("purpose", {}).get("becoming") or "").strip()
-    if not existing or not _looks_framework_internal_becoming(existing):
+    if not existing:
+        return None
+    state_day = int(state.get("day") or 0)
+    if state_day < _MISSION_DISCOVERY_MIN_DAY_FOR_BECOMING:
+        state.setdefault("purpose", {})["becoming"] = ""
+        return {
+            "type": "BECOMING_CLEARED",
+            "from": existing,
+            "reason": (
+                "Mission is unknown and discovery is still in progress; "
+                "becoming remains unset until sustained evidence across multiple cycles."
+            ),
+        }
+    if not _looks_framework_internal_becoming(existing):
         return None
     state.setdefault("purpose", {})["becoming"] = ""
     return {
         "type": "BECOMING_CLEARED",
         "from": existing,
-        "reason": "SPIRIT.md is empty and becoming was framework-internal; awaiting an external mission.",
+        "reason": "MISSION.md is empty and becoming was framework-internal; continue mission discovery from external evidence.",
     }
 
 
-def _reject_framework_becoming_when_spirit_empty(
+def _reject_becoming_when_mission_unknown(
     worker_result: dict[str, Any],
     *,
-    spirit_text: str,
+    mission_text: str,
+    day: int,
 ) -> dict[str, Any] | None:
-    if str(spirit_text or "").strip():
+    if str(mission_text or "").strip():
         return None
     candidate = str(worker_result.get("becoming") or "").strip()
-    if not candidate or not _looks_framework_internal_becoming(candidate):
+    if not candidate:
         return None
-    worker_result.pop("becoming", None)
+    if _looks_framework_internal_becoming(candidate):
+        worker_result.pop("becoming", None)
+        return {
+            "type": "BECOMING_REJECTED",
+            "candidate": candidate,
+            "reason": "MISSION.md is empty and candidate becoming was framework-internal; propose human/environment outcomes instead.",
+        }
+    if int(day) < _MISSION_DISCOVERY_MIN_DAY_FOR_BECOMING:
+        worker_result.pop("becoming", None)
+        return {
+            "type": "BECOMING_REJECTED",
+            "candidate": candidate,
+            "reason": (
+                f"Mission is unknown and day {int(day):03d} is too early to lock becoming; "
+                "continue evidence-building across multiple cycles first."
+            ),
+        }
+    return None
+
+
+def _mission_unknown(*, mission_text: str) -> bool:
+    return not str(mission_text or "").strip()
+
+
+def _mission_unknown_event(day: int) -> dict[str, Any]:
     return {
-        "type": "BECOMING_REJECTED",
-        "candidate": candidate,
-        "reason": "SPIRIT.md is empty and candidate becoming was framework-internal; propose human/environment outcomes instead.",
+        "type": "MISSION_UNKNOWN",
+        "day": int(day),
+        "reason": (
+            "MISSION.md is not set; keep mission discovery active over multiple cycles. "
+            "Build capabilities, gather evidence, and avoid premature mission locking."
+        ),
     }
 
 
@@ -155,12 +198,12 @@ def run_tick() -> dict[str, Any]:
     load_dotenv()
 
     device_id = resolve_device_id()
-    spirit_text = load_spirit_text()
-    spirit_path = str(SPIRIT_FILE)
-    state = load_state(device_id, spirit_path=spirit_path)
-    pre_cycle_event = _clear_framework_becoming_from_state_when_spirit_empty(
+    mission_text = load_mission_text()
+    mission_path = str(MISSION_FILE)
+    state = load_state(device_id, mission_path=mission_path)
+    pre_cycle_event = _clear_becoming_from_state_when_mission_unknown(
         state,
-        spirit_text=spirit_text,
+        mission_text=mission_text,
     )
     if pre_cycle_event:
         save_state(device_id, state)
@@ -199,6 +242,10 @@ def run_tick() -> dict[str, Any]:
             "status": state.get("status"),
         },
     )
+    if _mission_unknown(mission_text=mission_text):
+        unknown_event = _mission_unknown_event(day)
+        unknown_event["cycle_id"] = cycle_id
+        append_event(device_id, unknown_event)
 
     try:
         if pending_human_message and is_terminate_command(pending_human_message):
@@ -238,7 +285,7 @@ def run_tick() -> dict[str, Any]:
                 day=day,
                 state=state,
                 worker_status="TERMINATED",
-                spirit_text=spirit_text,
+                mission_text=mission_text,
                 summary_hint=str(state.get("last_summary") or ""),
                 objective_hint="Human requested device termination.",
                 now=started_at,
@@ -306,7 +353,7 @@ def run_tick() -> dict[str, Any]:
             state,
             device_id=device_id,
             cycle_id=cycle_id,
-            spirit_text=spirit_text,
+            mission_text=mission_text,
             result_path=result_path,
             allowed_paths=allowed_paths,
         )
@@ -322,9 +369,10 @@ def run_tick() -> dict[str, Any]:
             project_root=Path(PROJECT_ROOT),
             timeout_seconds=codex_timeout_seconds(),
         )
-        rejected_becoming_event = _reject_framework_becoming_when_spirit_empty(
+        rejected_becoming_event = _reject_becoming_when_mission_unknown(
             worker_result,
-            spirit_text=spirit_text,
+            mission_text=mission_text,
+            day=day,
         )
         if rejected_becoming_event:
             rejected_becoming_event["cycle_id"] = cycle_id
@@ -367,7 +415,7 @@ def run_tick() -> dict[str, Any]:
             day=day,
             state=state,
             worker_status=str(worker_result.get("status") or "UNKNOWN"),
-            spirit_text=spirit_text,
+            mission_text=mission_text,
             summary_hint=str(state.get("last_summary") or ""),
             objective_hint=str(work_order.get("objective") or ""),
             now=started_at,

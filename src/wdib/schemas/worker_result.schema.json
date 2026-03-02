@@ -34,6 +34,8 @@
         "properties": {
           "task_id": {"type": "string", "minLength": 1},
           "status": {"type": "string", "enum": ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]},
+          "defer_until": {"type": ["string", "null"], "format": "date"},
+          "defer_reason": {"type": "string"},
           "note": {"type": "string"}
         }
       }

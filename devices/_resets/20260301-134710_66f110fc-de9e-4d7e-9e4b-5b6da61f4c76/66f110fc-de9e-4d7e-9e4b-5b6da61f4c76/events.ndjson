@@ -1,0 +1,14 @@
+{"message": "Created new WDIB state file.", "ts": "2026-03-01T13:28:46", "type": "STATE_INITIALIZED"}
+{"cycle_id": "cycle-001-20260301T132846", "day": 1, "status": "ACTIVE", "ts": "2026-03-01T13:28:46", "type": "CYCLE_STARTED"}
+{"cycle_id": "cycle-001-20260301T132846", "mode": "live", "returncode": 0, "ts": "2026-03-01T13:30:34", "type": "WORKER_EXECUTED"}
+{"cycle_id": "cycle-001-20260301T132846", "task_id": "task-20260301-001", "title": "Run a twice-daily doorstep conditions scan with action tips", "ts": "2026-03-01T13:30:34", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T132846", "task_id": "task-20260301-002", "title": "Start a pre-departure charging risk alert", "ts": "2026-03-01T13:30:34", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T132846", "task_id": "task-20260301-003", "title": "Deploy local connectivity outage checks with fallback actions", "ts": "2026-03-01T13:30:34", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T132846", "task_id": "task-20260301-004", "title": "Publish a morning readiness card with GO or DELAY recommendation", "ts": "2026-03-01T13:30:34", "type": "TASK_CREATED"}
+{"cycle_id": "cycle-001-20260301T132846", "from": "", "to": "Help a nearby human avoid avoidable daily disruptions through timely local readiness checks and concrete actions.", "ts": "2026-03-01T13:30:34", "type": "BECOMING_UPDATED"}
+{"cycle_id": "cycle-001-20260301T132846", "day": 1, "git": {"committed": false, "message": "Skipped git commit because WDIB_SKIP_GIT_COMMIT=true.", "pushed": false}, "status": "ACTIVE", "ts": "2026-03-01T13:30:34", "type": "CYCLE_COMPLETED"}
+{"cycle_id": "cycle-002-20260301T134213", "day": 2, "status": "ACTIVE", "ts": "2026-03-01T13:42:13", "type": "CYCLE_STARTED"}
+{"cycle_id": "cycle-002-20260301T134213", "from": "TODO", "reason": "Selected by planner for current cycle.", "task_id": "task-20260301-001", "to": "IN_PROGRESS", "ts": "2026-03-01T13:42:13", "type": "TASK_STATUS_CHANGED"}
+{"cycle_id": "cycle-002-20260301T134213", "mode": "live", "returncode": 0, "ts": "2026-03-01T13:46:34", "type": "WORKER_EXECUTED"}
+{"cycle_id": "cycle-002-20260301T134213", "day": 2, "git": {"committed": false, "message": "Skipped git commit because WDIB_SKIP_GIT_COMMIT=true.", "pushed": false}, "status": "ACTIVE", "ts": "2026-03-01T13:46:34", "type": "CYCLE_COMPLETED"}
+{"channel": "slack", "cycle_id": "cycle-002-20260301T134213", "day": 2, "status_code": 200, "ts": "2026-03-01T13:46:40", "type": "NOTIFICATION_SENT"}

@@ -14,7 +14,7 @@ Optional:
   --user <name>              SSH user (default: pi)
   --port <port>              SSH port (default: 22)
   --openai-api-key <key>     OPENAI_API_KEY to write into src/.env
-  --spirit-file <path>       Local SPIRIT.md file to upload before first run
+  --mission-file <path>       Local MISSION.md file to upload before first run
   --skip-run                 Skip initial ./src/run.sh
 
 Example:
@@ -22,7 +22,7 @@ Example:
     --host 192.168.4.173 \\
     --repo https://github.com/<you>/what-do-i-become.git \\
     --openai-api-key "\$OPENAI_API_KEY" \\
-    --spirit-file ./src/SPIRIT.security-monitoring.example.md
+    --mission-file ./src/MISSION.security-monitoring.example.md
 USAGE
 }
 
@@ -61,8 +61,8 @@ USER="pi"
 PORT="22"
 REPO_URL=""
 OPENAI_API_KEY=""
-SPIRIT_FILE_PATH=""
-SPIRIT_B64=""
+MISSION_FILE_PATH=""
+MISSION_B64=""
 RUN_ONCE="1"
 
 while [ "$#" -gt 0 ]; do
@@ -87,8 +87,8 @@ while [ "$#" -gt 0 ]; do
       OPENAI_API_KEY="${2:-}"
       shift 2
       ;;
-    --spirit-file)
-      SPIRIT_FILE_PATH="${2:-}"
+    --mission-file)
+      MISSION_FILE_PATH="${2:-}"
       shift 2
       ;;
     --skip-run)
@@ -112,15 +112,15 @@ if [ -z "$HOST" ] || [ -z "$REPO_URL" ]; then
   exit 2
 fi
 
-if [ -n "$SPIRIT_FILE_PATH" ]; then
-  if [ ! -f "$SPIRIT_FILE_PATH" ]; then
-    echo "[ERR] --spirit-file not found: $SPIRIT_FILE_PATH" >&2
+if [ -n "$MISSION_FILE_PATH" ]; then
+  if [ ! -f "$MISSION_FILE_PATH" ]; then
+    echo "[ERR] --mission-file not found: $MISSION_FILE_PATH" >&2
     exit 2
   fi
   if command -v base64 >/dev/null 2>&1; then
-    SPIRIT_B64="$(base64 < "$SPIRIT_FILE_PATH" | tr -d '\n')"
+    MISSION_B64="$(base64 < "$MISSION_FILE_PATH" | tr -d '\n')"
   else
-    SPIRIT_B64="$(python3 - "$SPIRIT_FILE_PATH" <<'PY'
+    MISSION_B64="$(python3 - "$MISSION_FILE_PATH" <<'PY'
 import base64
 import pathlib
 import sys
@@ -152,14 +152,14 @@ if [ -n "$REMOTE_URL" ]; then
   echo "[INFO] Push URL:  $REMOTE_URL"
 fi
 
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" bash -s -- "$CLONE_URL" "$REMOTE_URL" "$OPENAI_API_KEY" "$RUN_ONCE" "$SPIRIT_B64" <<'REMOTE'
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" bash -s -- "$CLONE_URL" "$REMOTE_URL" "$OPENAI_API_KEY" "$RUN_ONCE" "$MISSION_B64" <<'REMOTE'
 set -euo pipefail
 
 CLONE_URL="$1"
 REMOTE_URL="$2"
 OPENAI_API_KEY="$3"
 RUN_ONCE="$4"
-SPIRIT_B64="$5"
+MISSION_B64="$5"
 
 REPO_DIR="$HOME/development/what-do-i-become"
 SSH_DIR="$HOME/.ssh"
@@ -233,27 +233,28 @@ fi
 
 set_env_value WDIB_LLM_PROVIDER openai src/.env
 set_env_value WDIB_LLM_MODEL gpt-5.2 src/.env
+set_env_value WDIB_SCHEDULE_FREQUENCY daily src/.env
 if [ -n "$OPENAI_API_KEY" ]; then
   set_env_value OPENAI_API_KEY "$OPENAI_API_KEY" src/.env
 fi
 if [ -n "$REMOTE_URL" ]; then
   set_env_value WDIB_GIT_REMOTE_URL "$REMOTE_URL" src/.env
 fi
-if [ -n "$SPIRIT_B64" ]; then
+if [ -n "$MISSION_B64" ]; then
   if command -v base64 >/dev/null 2>&1; then
-    printf '%s' "$SPIRIT_B64" | base64 -d > src/SPIRIT.md \
-      || printf '%s' "$SPIRIT_B64" | base64 --decode > src/SPIRIT.md
+    printf '%s' "$MISSION_B64" | base64 -d > src/MISSION.md \
+      || printf '%s' "$MISSION_B64" | base64 --decode > src/MISSION.md
   else
-    python3 - "$SPIRIT_B64" <<'PY'
+    python3 - "$MISSION_B64" <<'PY'
 import base64
 import pathlib
 import sys
 
 payload = sys.argv[1].encode("ascii")
-pathlib.Path("src/SPIRIT.md").write_bytes(base64.b64decode(payload))
+pathlib.Path("src/MISSION.md").write_bytes(base64.b64decode(payload))
 PY
   fi
-  echo "[INFO] Uploaded SPIRIT.md from --spirit-file"
+  echo "[INFO] Uploaded MISSION.md from --mission-file"
 fi
 chmod 600 src/.env || true
 

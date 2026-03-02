@@ -1,0 +1,77 @@
+{
+  "artifacts": [
+    {
+      "created_on": "2026-03-01",
+      "description": "Worker result for cycle-001-20260301T132846 with local environment evidence and externally oriented next tasks.",
+      "path": "devices/66f110fc-de9e-4d7e-9e4b-5b6da61f4c76/runtime/worker_results/cycle-001-20260301T132846.json"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Twice-daily doorstep scan protocol with 2-minute checklist, cadence windows, and action-tip rules.",
+      "path": "devices/66f110fc-de9e-4d7e-9e4b-5b6da61f4c76/runtime/doorstep_scan/protocol.md"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Initialized 2026-03-01 doorstep scan log entry with three conservative action tips and explicit unknown-confidence marker.",
+      "path": "devices/66f110fc-de9e-4d7e-9e4b-5b6da61f4c76/runtime/doorstep_scan/scan_log_2026-03-01.ndjson"
+    }
+  ],
+  "awoke_on": "2026-03-01",
+  "day": 2,
+  "device_id": "66f110fc-de9e-4d7e-9e4b-5b6da61f4c76",
+  "hardware_requests": [],
+  "incidents": [],
+  "last_summary": "Advanced task task-20260301-001 by operationalizing a twice-daily doorstep scan workflow and recording today\u2019s initialization scan with concrete action tips while preserving evidence integrity. Verification evidence: `imagesnap -l` => No video devices found; `ls -la devices/66f110fc-de9e-4d7e-9e4b-5b6da61f4c76/runtime/doorstep_scan` => created `protocol.md` and `scan_log_2026-03-01.ndjson`; `python3` log validator => `doorstep_scan_log_valid rows=1 tips=3 confidence=unknown`; `PYTHONPATH=src python3` contract validation => `worker_result_schema_valid`. This cycle cannot claim machine-observed doorstep conditions because no local video device is available, so the task remains IN_PROGRESS pending morning/evening physical doorway observations.",
+  "purpose": {
+    "becoming": "Help a nearby human avoid avoidable daily disruptions through timely local readiness checks and concrete actions.",
+    "spirit_path": "/Users/luc/development/what-do-i-become/src/SPIRIT.md"
+  },
+  "schema_version": "1.0",
+  "status": "ACTIVE",
+  "tasks": [
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "At morning and evening, perform a 2-minute outside observation (rain, wind, visibility, surface hazards) and publish 3 concrete actions for the nearby human such as umbrella, route, and footwear choices.",
+      "id": "task-20260301-001",
+      "notes": "Adds direct real-world sensing that on-device telemetry cannot capture.\n[2026-03-01] Created a documented twice-daily doorstep scan protocol and initialized today\u2019s scan log with three conservative action tips. Machine-observed doorstep sensing is unavailable this cycle (`imagesnap -l`: No video devices found), so next scans should capture human-observed conditions during the morning/evening windows to replace unknown fields.",
+      "status": "IN_PROGRESS",
+      "title": "Run a twice-daily doorstep conditions scan with action tips",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Sample battery and charging state every 5 minutes and alert before likely departure windows when battery is below threshold or still discharging, with explicit next actions (plug in now, reduce load, carry power bank).",
+      "id": "task-20260301-002",
+      "notes": "Current machine observation shows 32% battery and discharging, creating immediate day-to-day risk.",
+      "status": "TODO",
+      "title": "Start a pre-departure charging risk alert",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Monitor default route, gateway reachability, and DNS resolution; when degraded, emit a short human-facing fallback checklist (hotspot, alternate venue, reschedule critical calls).",
+      "id": "task-20260301-003",
+      "notes": "Observed interface is active with local IP but Wi-Fi association query reports not associated, so explicit reliability checks are justified.",
+      "status": "TODO",
+      "title": "Deploy local connectivity outage checks with fallback actions",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Before commute hours, combine doorstep observation, charging risk, and connectivity health into a one-card recommendation with one critical action to take immediately.",
+      "id": "task-20260301-004",
+      "notes": "Turns observed local signals into direct human decision value each day.",
+      "status": "TODO",
+      "title": "Publish a morning readiness card with GO or DELAY recommendation",
+      "updated_on": "2026-03-01"
+    }
+  ]
+}

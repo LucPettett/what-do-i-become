@@ -59,7 +59,7 @@ def ensure_layout(device_id: str) -> dict[str, Path]:
     return paths
 
 
-def default_state(device_id: str, spirit_path: str) -> dict[str, Any]:
+def default_state(device_id: str, mission_path: str) -> dict[str, Any]:
     return {
         "schema_version": "1.0",
         "device_id": device_id,
@@ -67,7 +67,7 @@ def default_state(device_id: str, spirit_path: str) -> dict[str, Any]:
         "day": 0,
         "purpose": {
             "becoming": "",
-            "spirit_path": spirit_path,
+            "mission_path": mission_path,
         },
         "status": "ACTIVE",
         "tasks": [],
@@ -78,11 +78,48 @@ def default_state(device_id: str, spirit_path: str) -> dict[str, Any]:
     }
 
 
-def load_state(device_id: str, spirit_path: str) -> dict[str, Any]:
+def _migrate_legacy_state(state: dict[str, Any], *, mission_path: str) -> tuple[dict[str, Any], bool]:
+    migrated = False
+
+    def _normalize_path(value: str) -> str:
+        normalized = str(value or "").strip()
+        if not normalized:
+            return ""
+        return normalized.replace("SPIRIT.md", "MISSION.md")
+
+    purpose = state.get("purpose")
+    if not isinstance(purpose, dict):
+        purpose = {}
+        state["purpose"] = purpose
+        migrated = True
+
+    if "becoming" not in purpose:
+        purpose["becoming"] = ""
+        migrated = True
+
+    legacy_path = _normalize_path(str(purpose.get("spirit_path") or ""))
+    mission_value = _normalize_path(str(purpose.get("mission_path") or ""))
+    if mission_value and mission_value != str(purpose.get("mission_path") or "").strip():
+        migrated = True
+    if not mission_value:
+        purpose["mission_path"] = legacy_path or mission_path
+        migrated = True
+    elif mission_value != str(purpose.get("mission_path") or "").strip():
+        purpose["mission_path"] = mission_value
+        migrated = True
+
+    if "spirit_path" in purpose:
+        purpose.pop("spirit_path", None)
+        migrated = True
+
+    return state, migrated
+
+
+def load_state(device_id: str, mission_path: str) -> dict[str, Any]:
     paths = ensure_layout(device_id)
 
     if not paths["state"].exists():
-        state = default_state(device_id, spirit_path)
+        state = default_state(device_id, mission_path)
         save_state(device_id, state)
         append_event(
             device_id,
@@ -95,7 +132,18 @@ def load_state(device_id: str, spirit_path: str) -> dict[str, Any]:
         return state
 
     state = load_json(paths["state"])
+    state, migrated = _migrate_legacy_state(state, mission_path=mission_path)
     validate_payload(state, "state.schema.json", label="state")
+    if migrated:
+        save_state(device_id, state)
+        append_event(
+            device_id,
+            {
+                "ts": _now(),
+                "type": "STATE_MIGRATED",
+                "message": "Migrated legacy purpose fields to MISSION.md naming.",
+            },
+        )
     return state
 
 

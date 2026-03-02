@@ -1,0 +1,23 @@
+{
+  "artifacts": [
+    {
+      "description": "Twice-daily doorstep scan protocol with cadence windows, 2-minute checklist, and action-tip rules.",
+      "path": "devices/64e5020b-ac98-4c34-bfef-0033b2fef107/runtime/doorstep_scan/protocol.md"
+    },
+    {
+      "description": "Initialized 2026-03-01 doorstep scan log entry with three conservative action tips and explicit unknown-confidence marker.",
+      "path": "devices/64e5020b-ac98-4c34-bfef-0033b2fef107/runtime/doorstep_scan/scan_log_2026-03-01.ndjson"
+    }
+  ],
+  "cycle_id": "cycle-002-20260301T140635",
+  "schema_version": "1.0",
+  "status": "COMPLETED",
+  "summary": "Advanced task task-20260301-001 by operationalizing a twice-daily doorstep scan workflow for this device and recording today\u2019s initialization scan with concrete action tips while preserving evidence integrity. External research was not required because local repository context and machine commands were sufficient. Verification evidence: `imagesnap -l` => No video devices found; `ls -la devices/64e5020b-ac98-4c34-bfef-0033b2fef107/runtime/doorstep_scan` => created `protocol.md` and `scan_log_2026-03-01.ndjson`; `python3` log validator => `doorstep_scan_log_valid rows=1 tips=3 confidence=unknown`; `python3` schema validator => `worker_result_schema_valid`. This cycle cannot claim machine-observed doorstep conditions because no local video device is available, so task-20260301-001 remains IN_PROGRESS pending morning/evening physical doorway observations.",
+  "task_updates": [
+    {
+      "note": "Created a documented twice-daily doorstep scan protocol and initialized today\u2019s scan log with three conservative action tips. Machine-observed doorstep sensing is unavailable this cycle (`imagesnap -l`: No video devices found), so next scans should capture human-observed conditions during the morning/evening windows to replace unknown fields.",
+      "status": "IN_PROGRESS",
+      "task_id": "task-20260301-001"
+    }
+  ]
+}

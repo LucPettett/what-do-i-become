@@ -34,20 +34,21 @@
     "context": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["becoming", "spirit_excerpt", "tasks", "hardware_requests", "incidents"],
+      "required": ["becoming", "mission_excerpt", "tasks", "hardware_requests", "incidents"],
       "properties": {
         "becoming": {"type": "string"},
-        "spirit_excerpt": {"type": "string"},
+        "mission_excerpt": {"type": "string"},
         "tasks": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "title", "status"],
+            "required": ["id", "title", "status", "defer_until"],
             "properties": {
               "id": {"type": "string"},
               "title": {"type": "string"},
-              "status": {"type": "string"}
+              "status": {"type": "string"},
+              "defer_until": {"type": "string"}
             }
           }
         },

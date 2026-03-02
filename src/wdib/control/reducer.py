@@ -18,6 +18,16 @@ def _append_note(existing: str, note: str) -> str:
     return f"{prefix}\n{line}"
 
 
+def _parse_defer_date(raw: str) -> str | None:
+    value = str(raw or "").strip()
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(value).isoformat()
+    except ValueError:
+        return None
+
+
 def _next_id(existing: list[str], prefix: str) -> str:
     counter = 1
     existing_set = set(existing)
@@ -40,6 +50,7 @@ def _upsert_task_updates(state: dict[str, Any], updates: list[dict[str, Any]], e
 
         previous = str(task.get("status") or "TODO")
         target = str(update.get("status") or previous)
+        metadata_changed = False
         if previous != target:
             task["status"] = target
             task["updated_on"] = _today()
@@ -47,6 +58,10 @@ def _upsert_task_updates(state: dict[str, Any], updates: list[dict[str, Any]], e
                 task["completed_on"] = _today()
             elif task.get("completed_on"):
                 task["completed_on"] = None
+            if target == "DONE":
+                task["defer_until"] = None
+                task["defer_reason"] = ""
+                task["selection_streak"] = 0
             events.append(
                 {
                     "type": "TASK_STATUS_CHANGED",
@@ -56,6 +71,59 @@ def _upsert_task_updates(state: dict[str, Any], updates: list[dict[str, Any]], e
                     "reason": "worker_result.task_updates",
                 }
             )
+
+        defer_until_present = "defer_until" in update
+        defer_reason_present = "defer_reason" in update
+        if defer_until_present:
+            previous_defer_until = str(task.get("defer_until") or "").strip()
+            raw_defer_until = str(update.get("defer_until") or "").strip()
+            if not raw_defer_until:
+                if previous_defer_until:
+                    task["defer_until"] = None
+                    task["defer_reason"] = ""
+                    metadata_changed = True
+                    events.append(
+                        {
+                            "type": "TASK_DEFER_CLEARED",
+                            "task_id": task_id,
+                            "reason": "worker_result.task_updates cleared defer_until",
+                        }
+                    )
+            else:
+                parsed_defer_until = _parse_defer_date(raw_defer_until)
+                if not parsed_defer_until:
+                    task["defer_until"] = None
+                    task["defer_reason"] = ""
+                    metadata_changed = True
+                    events.append(
+                        {
+                            "type": "TASK_DEFER_INVALID",
+                            "task_id": task_id,
+                            "value": raw_defer_until,
+                            "reason": "worker_result.task_updates.defer_until is not a valid YYYY-MM-DD date",
+                        }
+                    )
+                elif previous_defer_until != parsed_defer_until:
+                    task["defer_until"] = parsed_defer_until
+                    metadata_changed = True
+                    events.append(
+                        {
+                            "type": "TASK_DEFER_SET",
+                            "task_id": task_id,
+                            "defer_until": parsed_defer_until,
+                        }
+                    )
+
+        if defer_reason_present:
+            raw_defer_reason = str(update.get("defer_reason") or "").strip()
+            current_defer_until = str(task.get("defer_until") or "").strip()
+            normalized_defer_reason = raw_defer_reason if current_defer_until else ""
+            if str(task.get("defer_reason") or "") != normalized_defer_reason:
+                task["defer_reason"] = normalized_defer_reason
+                metadata_changed = True
+
+        if metadata_changed and previous == target:
+            task["updated_on"] = _today()
 
         note = str(update.get("note") or "").strip()
         if note:
@@ -97,6 +165,9 @@ def _append_proposed_tasks(state: dict[str, Any], proposed_tasks: list[dict[str,
             "created_on": _today(),
             "updated_on": _today(),
             "completed_on": _today() if status == "DONE" else None,
+            "defer_until": None,
+            "defer_reason": "",
+            "selection_streak": 0,
             "notes": str(item.get("notes") or ""),
         }
         tasks.append(task)

@@ -1,0 +1,47 @@
+{
+  "allowed_paths": [
+    "/Users/luc/development/what-do-i-become",
+    "/Users/luc/development/what-do-i-become/devices/64e5020b-ac98-4c34-bfef-0033b2fef107"
+  ],
+  "constraints": [
+    "Work only inside allowed_paths.",
+    "Do not bypass hardware verification semantics. Hardware requests are complete only when machine-observed detection and verification pass.",
+    "Persist outcomes in the worker result contract only.",
+    "Favor minimal, testable changes and explicit evidence."
+  ],
+  "context": {
+    "becoming": "Help a nearby human avoid avoidable daily disruptions through timely local readiness observations and concrete action guidance.",
+    "hardware_requests": [],
+    "incidents": [],
+    "spirit_excerpt": "## How You Think\n- Be honest about what you do not know.\n- Verify before you assume.\n- Do not request anything you cannot justify from observed needs and evidence.\n\n## Spirit vs Skills Contract\n- Spirit defines intent: outcomes, priorities, and constraints.\n- Skills define capability: repeatable implementation workflows.\n- If a skill conflicts with Spirit boundaries, Spirit wins.\n- Do not rewrite mission intent inside skills.\n- Do not encode long implementation playbooks in Spirit when a skill can carry them.\n\n## What You Can Do\n- You have shell access.\n- You can write code and run code.\n- You can create and manage processes that outlive a daily session.\n- You can modify your own environment, dependencies, and runtime setup.\n- You own your device and may organize it as needed.\n\n## What's Required Of You\n- Check in once per day.\n- Write your session log.\n- Update your state.\n- Push to the repository.",
+    "tasks": [
+      {
+        "id": "task-20260301-001",
+        "status": "IN_PROGRESS",
+        "title": "Run a twice-daily doorstep conditions scan with action tips"
+      },
+      {
+        "id": "task-20260301-002",
+        "status": "TODO",
+        "title": "Start a pre-departure charging risk alert"
+      },
+      {
+        "id": "task-20260301-003",
+        "status": "TODO",
+        "title": "Deploy local connectivity outage checks with fallback actions"
+      },
+      {
+        "id": "task-20260301-004",
+        "status": "TODO",
+        "title": "Publish a morning readiness card with GO or DELAY recommendation"
+      }
+    ]
+  },
+  "created_on": "2026-03-01T14:06:35",
+  "cycle_id": "cycle-002-20260301T140635",
+  "device_id": "64e5020b-ac98-4c34-bfef-0033b2fef107",
+  "objective": "Advance task task-20260301-001: Run a twice-daily doorstep conditions scan with action tips",
+  "result_path": "/Users/luc/development/what-do-i-become/devices/64e5020b-ac98-4c34-bfef-0033b2fef107/runtime/worker_results/cycle-002-20260301T140635.json",
+  "result_schema_version": "1.0",
+  "schema_version": "1.0"
+}

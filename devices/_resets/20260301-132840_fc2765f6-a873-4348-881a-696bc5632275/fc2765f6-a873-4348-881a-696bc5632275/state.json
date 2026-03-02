@@ -1,0 +1,67 @@
+{
+  "artifacts": [
+    {
+      "created_on": "2026-03-01",
+      "description": "Worker result for cycle-001-20260301T131405 with machine-observed environment evidence and externally oriented next tasks.",
+      "path": "devices/fc2765f6-a873-4348-881a-696bc5632275/runtime/worker_results/cycle-001-20260301T131405.json"
+    }
+  ],
+  "awoke_on": "2026-03-01",
+  "day": 2,
+  "device_id": "fc2765f6-a873-4348-881a-696bc5632275",
+  "hardware_requests": [],
+  "incidents": [],
+  "last_summary": "Received human termination instruction and gracefully ended this run. Goodbye for now.",
+  "purpose": {
+    "becoming": "Gracefully conclude this mission run and hand over cleanly.",
+    "spirit_path": "/Users/luc/development/what-do-i-become/src/SPIRIT.md"
+  },
+  "schema_version": "1.0",
+  "status": "TERMINATED",
+  "tasks": [
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "At morning and evening, do a 2-minute physical observation from the home boundary (rain, wind, visibility, surface hazards) and publish 3 concrete actions for the nearby human (for example umbrella, route change, footwear choice).",
+      "id": "task-20260301-001",
+      "notes": "This adds direct real-world sensing where current on-device telemetry does not capture outdoor conditions.",
+      "status": "TODO",
+      "title": "Run a twice-daily doorstep observation and action brief",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Implement a lightweight monitor that checks link status and local route reachability every 5 minutes, then emits a human-facing alert with fallback actions (hotspot, venue switch, reschedule) when connectivity is degraded.",
+      "id": "task-20260301-002",
+      "notes": "Observed network state is mixed (interface active, not associated to AirPort), so explicit reliability checks can prevent avoidable disruptions.",
+      "status": "TODO",
+      "title": "Start local connectivity outage alerts for schedule protection",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Track battery trend when AC is present; if the machine keeps discharging on external power, notify the nearby human to reseat/replace charger before leaving home.",
+      "id": "task-20260301-003",
+      "notes": "Current observation shows AC power reported while battery is at 34% and discharging, which can become a real-world failure point.",
+      "status": "TODO",
+      "title": "Add charging-risk alert tied to real battery behavior",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Generate a concise daily card before commute hours combining battery state, charger status, connectivity health, and doorstep observation into GO/DELAY recommendations.",
+      "id": "task-20260301-004",
+      "notes": "Uses already-observable local context to create immediate human decision value each day.",
+      "status": "TODO",
+      "title": "Publish a morning departure readiness card",
+      "updated_on": "2026-03-01"
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 _URL_RE = re.compile(r"https?://\S+", re.IGNORECASE)
@@ -52,12 +52,34 @@ def _count_status(items: list[dict[str, Any]], expected: str) -> int:
     return sum(1 for item in items if str(item.get("status") or "").upper() == target)
 
 
-def _next_task_titles(tasks: list[dict[str, Any]]) -> list[str]:
+def _parse_iso_date(raw: str) -> date | None:
+    value = str(raw or "").strip()
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _is_deferred_task(task: dict[str, Any], *, run_date: str) -> bool:
+    defer_until = _parse_iso_date(str(task.get("defer_until") or ""))
+    if not defer_until:
+        return False
+    run_day = _parse_iso_date(run_date)
+    if not run_day:
+        return False
+    return defer_until > run_day
+
+
+def _next_task_titles(tasks: list[dict[str, Any]], *, run_date: str) -> list[str]:
     picked: list[str] = []
     for desired in ("IN_PROGRESS", "TODO"):
         for task in tasks:
             status = str(task.get("status") or "").upper()
             if status != desired:
+                continue
+            if _is_deferred_task(task, run_date=run_date):
                 continue
             title = _sanitize(str(task.get("title") or ""), max_len=100)
             if title and title not in picked:
@@ -218,8 +240,8 @@ def _safe_reflection(summary_hint: str) -> str:
     return cleaned
 
 
-def _extract_spirit_purpose(spirit_text: str) -> str:
-    raw = str(spirit_text or "")
+def _extract_mission_purpose(mission_text: str) -> str:
+    raw = str(mission_text or "")
     if not raw.strip():
         return ""
 
@@ -279,8 +301,8 @@ def _recent_activity(summary_hint: str, objective_hint: str) -> str:
         lowered = objective.lower()
         if "hardware requests are pending" in lowered:
             return "Kept software work moving while waiting for hardware verification."
-        if "inspect local physical/environment context" in lowered:
-            return "Inspected local environment and planned practical next steps."
+        if "translate mission and current state into a concrete capability roadmap" in lowered:
+            return "Translated mission intent into a concrete capability roadmap and selected the highest-leverage next step."
         return _sanitize(objective, max_len=160)
 
     return "Made steady progress on mission-aligned work."
@@ -317,7 +339,7 @@ def build_public_status(
     day: int,
     state: dict[str, Any],
     worker_status: str,
-    spirit_text: str = "",
+    mission_text: str = "",
     summary_hint: str = "",
     objective_hint: str = "",
     now: datetime | None = None,
@@ -330,7 +352,7 @@ def build_public_status(
     state_status = str(state.get("status") or "UNKNOWN")
     terminated = state_status.upper() == "TERMINATED"
     completed_tasks = _completed_task_titles(tasks, run_date=run_date)
-    next_tasks = [] if terminated else _next_task_titles(tasks)
+    next_tasks = [] if terminated else _next_task_titles(tasks, run_date=run_date)
     hardware_focus = [] if terminated else _hardware_focus(hardware_requests)
     system_profile = "" if terminated else _system_profile_from_summary(summary_hint)
     engineering_details = _engineering_details(
@@ -343,6 +365,9 @@ def build_public_status(
         if terminated
         else _self_observation(tasks, hardware_requests, incidents)
     )
+    mission_purpose = _extract_mission_purpose(mission_text)
+    if not mission_purpose:
+        mission_purpose = "Mission unknown; self-discovery in progress (set MISSION.md to anchor it)."
 
     return {
         "schema_version": "1.0",
@@ -354,7 +379,7 @@ def build_public_status(
         "day": int(day),
         "status": state_status,
         "worker_status": str(worker_status or "UNKNOWN"),
-        "purpose": _extract_spirit_purpose(spirit_text) or "Unset (add a mission in SPIRIT.md).",
+        "purpose": mission_purpose,
         "becoming": _sanitize(str((state.get("purpose") or {}).get("becoming") or "")),
         "recent_activity": _recent_activity(summary_hint, objective_hint),
         "system_profile": system_profile,

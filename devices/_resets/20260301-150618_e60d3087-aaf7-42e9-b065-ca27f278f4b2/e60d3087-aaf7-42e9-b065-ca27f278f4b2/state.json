@@ -1,0 +1,112 @@
+{
+  "artifacts": [
+    {
+      "created_on": "2026-03-01",
+      "description": "Worker result for cycle-001-20260301T141433 containing local environment evidence and externally oriented next tasks.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/worker_results/cycle-001-20260301T141433.json"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Twice-daily doorstep hazard scan protocol with checklist, action-tip rules, and fallback handling when sensing hardware is unavailable.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Initialized 2026-03-01 doorstep scan log entry with exactly three action tips and explicit unknown confidence due to missing camera hardware.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_2026-03-01.ndjson"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Doorstep scan module and CLI that enforce morning/evening windows, prevent duplicate daily slots, and generate exactly three action tips.",
+      "path": "src/wdib/control/doorstep_scan.py"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Unit tests for slot-window selection, action-tip generation, fallback behavior, and duplicate-slot rejection.",
+      "path": "tests/test_wdib_doorstep_scan.py"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Updated doorstep scan protocol with executable CLI command and cadence guardrail details.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Doorstep scan log with fallback scan entry and action tips, including explicit remaining morning/evening slots for today.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_2026-03-01.ndjson"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Doorstep scan cadence-status API and CLI status-only mode for due/overdue/next-slot visibility.",
+      "path": "src/wdib/control/doorstep_scan.py"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Unit tests covering cadence status transitions, day-complete behavior, and non-writing status-only CLI output.",
+      "path": "tests/test_wdib_doorstep_scan.py"
+    },
+    {
+      "created_on": "2026-03-01",
+      "description": "Updated doorstep scan runbook with status-only command and explicit interpretation for missed or due slots.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md"
+    }
+  ],
+  "awoke_on": "2026-03-01",
+  "day": 4,
+  "device_id": "e60d3087-aaf7-42e9-b065-ca27f278f4b2",
+  "hardware_requests": [],
+  "incidents": [],
+  "last_summary": "Advanced task task-20260301-001 by adding cadence-state reporting for the doorstep scan workflow, so twice-daily execution now exposes due-now/overdue/next-slot signals without writing fake observations. Local context/location evidence: `date '+%Y-%m-%dT%H:%M:%S%z %A'` => `2026-03-01T15:03:56+1000 Sunday`; `readlink /etc/localtime` => `/var/db/timezone/zoneinfo/Australia/Brisbane` (location confidence: medium, timezone-level only). Hardware dependency status: `imagesnap -l` => `No video devices found.` so machine-observed doorstep sensing remains unavailable. Code/files changed: updated `src/wdib/control/doorstep_scan.py` with new `cadence_status(...)`, `--status-only` CLI mode, and cadence status in normal run output; expanded `tests/test_wdib_doorstep_scan.py` with cadence-state and status-only tests; updated `devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md` with status command and interpretation rules. Verification evidence: `PYTHONPATH=src python3 -m unittest tests/test_wdib_doorstep_scan.py tests/test_wdib_reducer.py tests/test_wdib_hardware_probe.py` => `Ran 11 tests ... OK`; `PYTHONPATH=src python3 -m wdib.control.doorstep_scan --log-path devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_$(date +%F).ndjson --status-only` => `remaining_slots_today=[\"morning\",\"evening\"]`, `overdue_slots_today=[\"morning\"]`, `next_slot=\"evening\"`; `PYTHONPATH=src python3 -m wdib.control.doorstep_scan --log-path devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_2026-03-01.ndjson --status-only --now 2026-03-01T18:10:00+10:00` => `should_scan_now=true`, `current_window_slot=\"evening\"`; worker-result contract validated via `PYTHONPATH=src python3 ... validate_payload(..., \"worker_result.schema.json\")` => `worker_result_schema_valid`.",
+  "purpose": {
+    "becoming": "Help the nearby human leave home safer and with fewer avoidable disruptions by turning local observations into immediate action.",
+    "spirit_path": "/Users/luc/development/what-do-i-become/src/SPIRIT.md"
+  },
+  "schema_version": "1.0",
+  "status": "ACTIVE",
+  "tasks": [
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "At morning and evening, perform a 2-minute outside observation for rain, wind, visibility, and walkway hazards, then record three specific actions (for example footwear, route, and carry items) for the human.",
+      "id": "task-20260301-001",
+      "notes": "No onboard camera is currently available (`imagesnap -l` returned no video devices), so manual observation is the most direct way to create real-world safety value now.\n[2026-03-01] Created and verified the doorstep scan protocol plus today's initialized scan record. Because no local video device is detected, next scan entries should be captured as human-observed morning/evening checks to move confidence from unknown to observed.\n[2026-03-01] Delivered a tested scan runner with cadence enforcement and logged an out-of-window fallback scan; today still needs observed morning/evening doorway checks to complete the twice-daily objective.\n[2026-03-01] Cadence visibility is now machine-validated (`should_scan_now`, `overdue_slots_today`, `next_slot`); current status shows morning missed and evening due in 17:00-20:00, so the next high-value step is an observed evening doorway scan entry with real conditions.",
+      "status": "IN_PROGRESS",
+      "title": "Run a twice-daily doorstep hazard scan with action tips",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Check battery and charging state before likely departure windows and issue one concrete action when risk is detected (plug high-watt charger, reduce load, or delay departure until threshold).",
+      "id": "task-20260301-002",
+      "notes": "Current observation shows 25% battery and discharging even while on AC Power, which can cause preventable interruption outside the home.",
+      "status": "TODO",
+      "title": "Launch a pre-departure power readiness check",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Continuously validate local interface health and practical internet reachability, and when degraded provide a short fallback checklist (hotspot, alternate location, reschedule critical calls).",
+      "id": "task-20260301-003",
+      "notes": "Current network signals are inconsistent (active en0 IP with Wi-Fi service inactive), so explicit reliability checks can prevent failed remote commitments.",
+      "status": "TODO",
+      "title": "Add local connectivity reliability checks with fallback guidance",
+      "updated_on": "2026-03-01"
+    },
+    {
+      "blocked_by": "",
+      "completed_on": null,
+      "created_on": "2026-03-01",
+      "description": "Combine doorstep conditions, power readiness, and connectivity health into a single daily recommendation with one immediate action before the human leaves.",
+      "id": "task-20260301-004",
+      "notes": "Creates a high-value real-world decision artifact from local machine and physical observations instead of internal housekeeping outputs.",
+      "status": "TODO",
+      "title": "Publish a morning go or delay readiness card",
+      "updated_on": "2026-03-01"
+    }
+  ]
+}

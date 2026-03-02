@@ -35,10 +35,10 @@
     "purpose": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["becoming", "spirit_path"],
+      "required": ["becoming", "mission_path"],
       "properties": {
         "becoming": {"type": "string"},
-        "spirit_path": {"type": "string", "minLength": 1}
+        "mission_path": {"type": "string", "minLength": 1}
       }
     },
     "status": {
@@ -60,6 +60,9 @@
           "created_on": {"type": "string", "format": "date"},
           "updated_on": {"type": "string", "format": "date"},
           "completed_on": {"type": ["string", "null"], "format": "date"},
+          "defer_until": {"type": ["string", "null"], "format": "date"},
+          "defer_reason": {"type": "string"},
+          "selection_streak": {"type": "integer", "minimum": 0},
           "notes": {"type": "string"}
         }
       }

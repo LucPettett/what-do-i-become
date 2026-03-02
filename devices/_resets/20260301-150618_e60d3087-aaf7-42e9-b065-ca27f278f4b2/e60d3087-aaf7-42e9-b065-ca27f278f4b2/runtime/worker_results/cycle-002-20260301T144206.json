@@ -1,0 +1,24 @@
+{
+  "artifacts": [
+    {
+      "description": "Twice-daily doorstep hazard scan protocol with checklist, action-tip rules, and fallback handling when sensing hardware is unavailable.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/protocol.md"
+    },
+    {
+      "description": "Initialized 2026-03-01 doorstep scan log entry with exactly three action tips and explicit unknown confidence due to missing camera hardware.",
+      "path": "devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan/scan_log_2026-03-01.ndjson"
+    }
+  ],
+  "becoming": "Help the nearby human leave home safer and with fewer avoidable disruptions by turning local observations into immediate action.",
+  "cycle_id": "cycle-002-20260301T144206",
+  "schema_version": "1.0",
+  "status": "COMPLETED",
+  "summary": "Advanced task task-20260301-001 by implementing a twice-daily doorstep hazard scan protocol for this device and initializing today's doorstep scan log with three immediate action tips. Local context was determined from machine signals only: `date` reported 2026-03-01T14:42:58+1000 Sunday and `/etc/localtime` points to `Australia/Brisbane` (location confidence: medium, timezone-level only; no external geolocation used). Hardware dependency status: `imagesnap -l` => `No video devices found.`, so machine-observed doorstep conditions cannot be verified this cycle and manual doorway observation remains required in morning/evening windows. Verification evidence: `ls -la devices/e60d3087-aaf7-42e9-b065-ca27f278f4b2/runtime/doorstep_scan` => created `protocol.md` and `scan_log_2026-03-01.ndjson`; Python log validator => `doorstep_scan_log_valid rows=1 tips=3 confidence=unknown slot=setup`; worker result contract validation via `PYTHONPATH=src python3 ... validate_payload(..., 'worker_result.schema.json', label='worker_result')` => `worker_result_schema_valid`.",
+  "task_updates": [
+    {
+      "note": "Created and verified the doorstep scan protocol plus today's initialized scan record. Because no local video device is detected, next scan entries should be captured as human-observed morning/evening checks to move confidence from unknown to observed.",
+      "status": "IN_PROGRESS",
+      "task_id": "task-20260301-001"
+    }
+  ]
+}

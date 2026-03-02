@@ -14,9 +14,9 @@ An autonomous hardware and software framework that extends itself, one hardware 
 
 **You are the agent. You install the hardware.**
 
-`spirit.md` sets long-term mission.
-Without a spirit file, WDIB self-discovers its direction from observed reality and daily work.
-Either way, each cycle updates its near-term becoming and continues building toward a concrete purpose.
+`MISSION.md` sets long-term mission.
+Without a mission file, WDIB remains in mission-discovery mode and builds evidence across multiple cycles before locking a direction.
+It can still build software and capabilities immediately while mission confidence grows over time.
 
 [How It Works](#how-it-works) · [Getting Started](#getting-started) · [Architecture](#architecture) · [Setup](./SETUP.md) · [Safety](./SAFETY.md)
 
@@ -26,7 +26,7 @@ Most people start with hardware already running on the network.
 Use Example 1 or Example 2 in that case.
 Use Example 3 only when preparing a brand new SD card.
 
-### Example 1: Existing hardware without a spirit (self-discovery)
+### Example 1: Existing hardware without a mission (self-discovery)
 
 ```bash
 export DEVICE_IP="<device_ip>"
@@ -39,20 +39,20 @@ cd what-do-i-become
 codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}', run one tick, and report blockers only. Never echo full secrets."
 ```
 
-### Example 2: Existing hardware with a spirit
+### Example 2: Existing hardware with a mission
 
 ```bash
 export DEVICE_IP="<device_ip>"
 export OPENAI_API_KEY="<openai_api_key>"
 export WDIB_REPO_URL="https://github.com/<you>/what-do-i-become.git"
 
-cat > ./spirit.md <<'SPIRIT'
+cat > ./MISSION.md <<'MISSION'
 ## Mission
 You are determined to help clean up the beach of small-scale human rubbish.
 Your role is to become excellent at spotting, tracking, and reducing litter in the local beach environment.
-SPIRIT
+MISSION
 
-codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --spirit-file ./spirit.md, run one tick, and report blockers only. Never echo full secrets."
+codex exec --yolo "You are bootstrapping a WDIB device with this context: device IP ${DEVICE_IP}, SSH user pi, repo ${WDIB_REPO_URL}, OpenAI API key ${OPENAI_API_KEY}. SSH in, run ./src/device/bootstrap_over_ssh.sh with --host ${DEVICE_IP} --user pi --repo ${WDIB_REPO_URL} --openai-api-key '${OPENAI_API_KEY}' --mission-file ./MISSION.md, run one tick, and report blockers only. Never echo full secrets."
 ```
 
 Example custom mission:
@@ -128,29 +128,30 @@ What I'm thinking: Deliver a reliable twice-daily briefing that helps a human ma
 What I learned about myself: I have enough clarity and momentum to keep improving tomorrow.
 ```
 
-## Spirit on Hardware
+## Mission on Hardware
 
-Every device can have a **`spirit.md`**: a human-authored mission anchor.
+Every device can have a **`MISSION.md`**: a human-authored mission anchor.
 If it exists, WDIB uses it as the long-term north star.
-If it does not, WDIB still runs and discovers direction from observed context and outcomes.
+If it does not, WDIB still runs and discovers direction from observed context and outcomes over multiple cycles.
+When mission is unknown, WDIB does not lock a new mission immediately; it keeps building software, collecting evidence, and refining direction over time.
 
 Every device will **self-orchestrate**: write code, run persistent processes, and manage its own services. In the beginning, the daily session is the primary window of agency but as time goes on, the device will become more and more autonomous.
 
 This framework provides **a foundry for emergent behavior**.
 
-## Spirit
+## Mission
 
-`spirit.md` is the intent file for a device. It defines mission and priorities in plain language.
+`MISSION.md` is the intent file for a device. It defines mission and priorities in plain language.
 
-- Spirit is long-term purpose.
+- Mission is long-term purpose.
 - Becoming is short-term direction that changes as the device learns.
-- Keep spirit focused on outcomes, not implementation details.
+- Keep mission focused on outcomes, not implementation details.
 
-Optional Spirit files (shortcuts):
-- `src/SPIRIT.md.example` (generic template)
-- `src/SPIRIT.beach-cleanup.example.md` (small-scale beach litter clean-up mission)
-- `src/SPIRIT.daily-dashboard.example.md` (daily local/global intelligence dashboard mission)
-- `src/SPIRIT.security-monitoring.example.md` (driveway/house motion monitoring demo)
+Optional mission files (shortcuts):
+- `src/MISSION.md.example` (generic template)
+- `src/MISSION.beach-cleanup.example.md` (small-scale beach litter clean-up mission)
+- `src/MISSION.daily-dashboard.example.md` (daily local/global intelligence dashboard mission)
+- `src/MISSION.security-monitoring.example.md` (driveway/house motion monitoring demo)
 
 Beach clean-up demo excerpt:
 
@@ -185,7 +186,7 @@ WDIB worker prompts natively enforce engineering discipline during execution:
 - tests-first for behavior/code changes
 - verification evidence before completion claims
 
-When a Skill conflicts with Spirit boundaries, Spirit wins.
+When a Skill conflicts with mission boundaries, mission wins.
 
 ## You Are The Agent
 
@@ -215,7 +216,7 @@ Because awakening includes autonomous code execution, treat it as a high-risk ph
 
 Once per day, WDIB runs a tick:
 
-1. Load `state.json` and `SPIRIT.md`.
+1. Load `state.json` and `MISSION.md`.
 2. Probe hardware requests and auto-advance status on machine evidence.
 3. Build a `work_order`.
 4. Run Codex worker on-device.
@@ -237,7 +238,7 @@ Naturally, on the next awakening, it verifies the part works before moving on to
 
 **Example evolution** - a real experiment:
 
-- **Day 0:** `Inception` - The device immediately self-discovers its capabilities and considers its spirit and purpose.
+- **Day 0:** `Inception` - The device immediately self-discovers its capabilities and considers its mission and purpose.
 - **Day 1:** `Request camera module` — the device decides it wants visual input.
 - **Day 2:** `Awaiting camera module` — the device waits for you to install it.
 - **Day 4:** You install it. The device verifies it works and installs the necessary drivers. The device constructs software to use the camera.
@@ -260,7 +261,7 @@ chmod +x src/setup.sh
 ./src/setup.sh
 ```
 
-Setup generates a unique device ID, creates `devices/<uuid>/`, writes local `state.json`, creates the first public summary/status, configures daily cron at 09:00, and creates the first commit.
+Setup generates a unique device ID, creates `devices/<uuid>/`, writes local `state.json`, creates the first public summary/status, configures cron schedule (`WDIB_SCHEDULE_FREQUENCY=daily` by default), and creates the first commit.
 
 Set your API key:
 
@@ -277,6 +278,15 @@ WDIB_CODEX_ENABLE_WEB_SEARCH=true
 ```
 
 Default is `false`. Keep it off unless the mission frequently depends on external references that are not in local repo state.
+
+Optional: schedule frequency for WDIB ticks (`daily` by default, or `hourly`).
+
+```bash
+# In src/.env
+WDIB_SCHEDULE_FREQUENCY=daily
+# or
+WDIB_SCHEDULE_FREQUENCY=hourly
+```
 
 Optional notifications (modular):
 

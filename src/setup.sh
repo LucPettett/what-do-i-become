@@ -159,7 +159,7 @@ if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
 from wdib.contracts import load_json  # noqa: E402
-from wdib.paths import SPIRIT_FILE  # noqa: E402
+from wdib.paths import MISSION_FILE  # noqa: E402
 from wdib.publication import build_public_daily_summary, build_public_status  # noqa: E402
 from wdib.storage.repository import (  # noqa: E402
     default_state,
@@ -171,7 +171,7 @@ from wdib.storage.repository import (  # noqa: E402
 
 paths = ensure_layout(device_id)
 if not paths['state'].exists():
-    state = default_state(device_id=device_id, spirit_path=str(SPIRIT_FILE))
+    state = default_state(device_id=device_id, mission_path=str(MISSION_FILE))
     save_state(device_id, state)
 else:
     state = load_json(paths['state'])
@@ -185,7 +185,7 @@ status_payload = build_public_status(
     day=day,
     state=state,
     worker_status="SETUP",
-    spirit_text=SPIRIT_FILE.read_text(encoding="utf-8") if SPIRIT_FILE.exists() else "",
+    mission_text=MISSION_FILE.read_text(encoding="utf-8") if MISSION_FILE.exists() else "",
     summary_hint="Initial setup complete.",
     objective_hint="Prepared WDIB runtime and repository wiring.",
     now=now,
@@ -203,8 +203,29 @@ PY
 chmod +x "$FRAMEWORK_DIR/run.sh" "$FRAMEWORK_DIR/setup.sh"
 
 echo ""
-echo "-> Setting up daily cron job (9:00 AM)..."
-CRON_CMD="0 9 * * * cd ${FRAMEWORK_DIR} && ./run.sh >> ${PROJECT_ROOT}/cron.log 2>&1"
+SCHEDULE_FREQUENCY="$(read_env_value WDIB_SCHEDULE_FREQUENCY "$ENV_FILE" || true)"
+if [ -z "$SCHEDULE_FREQUENCY" ]; then
+  SCHEDULE_FREQUENCY="daily"
+fi
+SCHEDULE_FREQUENCY="$(printf '%s' "$SCHEDULE_FREQUENCY" | tr '[:upper:]' '[:lower:]')"
+
+CRON_EXPR=""
+case "$SCHEDULE_FREQUENCY" in
+  hourly)
+    CRON_EXPR="0 * * * *"
+    echo "-> Setting up hourly cron job..."
+    ;;
+  daily)
+    CRON_EXPR="0 9 * * *"
+    echo "-> Setting up daily cron job (9:00 AM)..."
+    ;;
+  *)
+    echo "-> Invalid WDIB_SCHEDULE_FREQUENCY='$SCHEDULE_FREQUENCY'; falling back to daily (9:00 AM)."
+    CRON_EXPR="0 9 * * *"
+    ;;
+esac
+
+CRON_CMD="${CRON_EXPR} cd ${FRAMEWORK_DIR} && ./run.sh >> ${PROJECT_ROOT}/cron.log 2>&1"
 if command -v crontab >/dev/null 2>&1; then
   ( crontab -l 2>/dev/null | grep -v "what-do-i-become\|src/run\.sh\|${FRAMEWORK_DIR}" ; echo "$CRON_CMD" ) | crontab -
   echo "  Installed: $CRON_CMD"
@@ -276,7 +297,7 @@ echo ""
 echo "  Next steps:"
 echo "    1. Edit src/.env (provider/model/API key, optional WDIB_GIT_REMOTE_URL)"
 echo "    2. Ensure git auth works (SSH key, PAT, or credential helper)"
-echo "    3. Optional: cp src/SPIRIT.md.example src/SPIRIT.md"
+echo "    3. Optional: cp src/MISSION.md.example src/MISSION.md"
 echo "    4. Run manually: ./src/run.sh"
 echo "    5. Device files now live in: devices/${DEVICE_ID}/"
 echo "=========================================================="
